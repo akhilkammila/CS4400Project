@@ -22,4 +22,11 @@ CREATE TABLE airline(
 ) ENGINE=innodb;
 
 INSERT INTO airline VALUES
-('Air_France', '25')
+('Air_France ',' 25'),
+('American ',' 45'),
+('Delta ',' 46'),
+('JetBlue ',' 8'),
+('Lufthansa ',' 31'),
+('Southwest ',' 22'),
+('Spirit ',' 4'),
+('United ',' 40');
