@@ -1,0 +1,91 @@
+Airline command:
+="('" & B2 & "','" & C2 & "'),"
+
+Locations command:
+="("
+& IF(ISBLANK(B2),"NULL",CONCAT("'",B2,"'"))
+& "),"
+
+Airplanes command:
+="("
+& IF(ISBLANK(B2),"NULL",CONCAT("'",B2,"'")) & ","
+& IF(ISBLANK(C2),"NULL",CONCAT("'",C2,"'")) & ","
+& IF(ISBLANK(D2),"NULL",CONCAT("'",D2,"'")) & ","
+& IF(ISBLANK(E2),"NULL",CONCAT("'",E2,"'")) & ","
+& IF(ISBLANK(F2),"NULL",CONCAT("'",F2,"'")) & ","
+& IF(ISBLANK(G2),"NULL",CONCAT("'",G2,"'")) & ","
+& IF(ISBLANK(H2),"NULL",CONCAT("'",H2,"'")) & ","
+& IF(ISBLANK(I2),"NULL",CONCAT("'",I2,"'"))
+& "),"
+
+
+Airports command:
+="("
+& IF(ISBLANK(B2),"NULL",CONCAT("'",B2,"'")) & ","
+& IF(ISBLANK(C2),"NULL",CONCAT("'",C2,"'")) & ","
+& IF(ISBLANK(D2),"NULL",CONCAT("'",D2,"'")) & ","
+& IF(ISBLANK(E2),"NULL",CONCAT("'",E2,"'")) & ","
+& IF(ISBLANK(F2),"NULL",CONCAT("'",F2,"'"))
+& "),"
+
+Persons command:
+="("
+& IF(ISBLANK(B2),"NULL",CONCAT("'",B2,"'")) & ","
+& IF(ISBLANK(C2),"NULL",CONCAT("'",C2,"'")) & ","
+& IF(ISBLANK(D2),"NULL",CONCAT("'",D2,"'")) & ","
+& IF(ISBLANK(E2),"NULL",CONCAT("'",E2,"'")) & ","
+& IF(ISBLANK(F2),"NULL",CONCAT("'",F2,"'")) & ","
+& IF(ISBLANK(G2),"NULL",CONCAT("'",G2,"'")) & ","
+& IF(ISBLANK(H2),"NULL",CONCAT("'",H2,"'")) & ","
+& IF(ISBLANK(I2),"NULL",CONCAT("'",I2,"'")) & ","
+& IF(ISBLANK(J2),"NULL",CONCAT("'",J2,"'")) & ","
+& IF(ISBLANK(K2),"NULL",CONCAT("'",K2,"'")) & ","
+& IF(ISBLANK(L2),"NULL",CONCAT("'",L2,"'")) & ","
+& IF(ISBLANK(M2),"NULL",CONCAT("'",M2,"'"))
+& "),"
+
+Routes command:
+="("
+& IF(ISBLANK(B2),"NULL",CONCAT("'",B2,"'")) & ","
+& IF(ISBLANK(C2),"NULL",CONCAT("'",C2,"'")) & ","
+& IF(ISBLANK(D2),"NULL",CONCAT("'",D2,"'")) & ","
+& IF(ISBLANK(E2),"NULL",CONCAT("'",E2,"'")) & ","
+& IF(ISBLANK(F2),"NULL",CONCAT("'",F2,"'")) & ","
+& IF(ISBLANK(G2),"NULL",CONCAT("'",G2,"'")) & ","
+& IF(ISBLANK(H2),"NULL",CONCAT("'",H2,"'")) & ","
+& IF(ISBLANK(I2),"NULL",CONCAT("'",I2,"'")) & ","
+& IF(ISBLANK(J2),"NULL",CONCAT("'",J2,"'")) & ","
+& IF(ISBLANK(K2),"NULL",CONCAT("'",K2,"'")) & ","
+& IF(ISBLANK(L2),"NULL",CONCAT("'",L2,"'"))
+& "),"
+
+Extra Legs command:
+="("
+& IF(ISBLANK(B2),"NULL",CONCAT("'",B2,"'")) & ","
+& IF(ISBLANK(C2),"NULL",CONCAT("'",C2,"'")) & ","
+& IF(ISBLANK(D2),"NULL",CONCAT("'",D2,"'")) & ","
+& IF(ISBLANK(E2),"NULL",CONCAT("'",E2,"'"))
+& "),"
+
+Flights command:
+="("
+& IF(ISBLANK(B2),"NULL",CONCAT("'",B2,"'")) & ","
+& IF(ISBLANK(C2),"NULL",CONCAT("'",C2,"'")) & ","
+& IF(ISBLANK(D2),"NULL",CONCAT("'",D2,"'")) & ","
+& IF(ISBLANK(E2),"NULL",CONCAT("'",E2,"'")) & ","
+& IF(ISBLANK(F2),"NULL",CONCAT("'",F2,"'")) & ","
+& IF(ISBLANK(G2),"NULL",CONCAT("'",G2,"'")) & ","
+& IF(ISBLANK(H2),"NULL",CONCAT("'",H2,"'"))
+& "),"
+
+Tickets command:
+="("
+& IF(ISBLANK(B2),"NULL",CONCAT("'",B2,"'")) & ","
+& IF(ISBLANK(C2),"NULL",CONCAT("'",C2,"'")) & ","
+& IF(ISBLANK(D2),"NULL",CONCAT("'",D2,"'")) & ","
+& IF(ISBLANK(E2),"NULL",CONCAT("'",E2,"'")) & ","
+& IF(ISBLANK(F2),"NULL",CONCAT("'",F2,"'")) & ","
+& IF(ISBLANK(G2),"NULL",CONCAT("'",G2,"'")) & ","
+& IF(ISBLANK(H2),"NULL",CONCAT("'",H2,"'")) & ","
+& IF(ISBLANK(I2),"NULL",CONCAT("'",I2,"'"))
+& "),"

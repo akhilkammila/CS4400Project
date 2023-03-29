@@ -12,17 +12,16 @@ create database if not exists flight_management;
 use flight_management;
 -- Define the database structures and enter the denormalized data
 
-
 -- 1. Airlines
 DROP TABLE IF EXISTS airline;
 CREATE TABLE airline(
 	airlineID varchar(50) not null,
-    revenue int not null,
+    revenue int,
     PRIMARY KEY(airlineID)
 ) ENGINE=innodb;
 
 INSERT INTO airline VALUES
-('Air_France ',' 25'),
+('Air_France ','25'),
 ('American ',' 45'),
 ('Delta ',' 46'),
 ('JetBlue ',' 8'),
@@ -30,3 +29,5 @@ INSERT INTO airline VALUES
 ('Southwest ',' 22'),
 ('Spirit ',' 4'),
 ('United ',' 40');
+
+-- 2. 
