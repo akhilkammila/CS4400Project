@@ -86,3 +86,60 @@ CREATE TABLE person (
   -- CONSTRAINT person_ibfk_3 FOREIGN KEY (flying_tail) REFERENCES airplane (tail_num)
 
 ) ENGINE=InnoDB;
+DROP TABLE IF EXISTS tickets;
+CREATE TABLE tickets (
+	ticektID varchar(50) NOT NULL,
+    cost int NOT NULL,
+    carrier varchar(50) NOT NULL,
+    customer varchar(50) NOT NULL,
+    deplane_at varchar(50) NOT NULL,
+    PRIMARY KEY (ticketID),
+    CONSTRAINT tickets_ibfk_1 FOREIGN KEY (carrier) REFERENCES flights (flightID),
+    CONSTRAINT tickets_ibfk_2 FOREIGN KEY (customer) REFERENCES persons (personID),
+    CONSTRAINT tickets_ibfk_3 FOREIGN KEY (deplane_at) REFERENCES airports(airportID)
+);
+
+DROP TABLE IF EXISTS flights;
+CREATE TABLE flights(
+	flightID varchar(50) NOT NULL,
+    routeID varchar(50) NOT NULL,
+    support_airline varchar(50),
+    support_tail varchar(50),
+    progress int,
+    airplane_status varchar(100),
+    next_time time,
+    PRIMARY KEY(flightID),
+    CONSTRAINT flights_ibfk_1 FOREIGN KEY (routeID) REFERENCES routes (routeID),
+    CONSTRAINT flights_ibfk_2 FOREIGN KEY (support_airline, support_tail) REFERENCES airplanes (airlineID, tail_num)
+);
+DROP TABLE IF EXISTS seats;
+CREATE TABLE seats (
+	ticektID varchar(50) NOT NULL,
+    seat varchar(100) NOT NULL,
+    PRIMARY KEY (ticketID, seat),
+    CONSTRAINT seats_ibfk_1 FOREIGN KEY (ticketID) REFERENCES tickets (ticketID)
+);
+DROP TABLE IF EXISTS legs;
+CREATE TABLE legs (
+	legID varchar(50) NOT NULL,
+    distance int NOT NULL,
+    departure varchar(50),
+    arrival varchar(50),
+    PRIMARY KEY (legID),
+    CONSTRAINT legs_ibfk_1 FOREIGN KEY (departure) REFERENCES airports (airportID),
+    CONSTRAINT legs_ibfk_2 FOREIGN KEY (arrival) REFERENCES airports (airportID)
+);
+DROP TABLE IF EXISTS routes;
+CREATE TABLE routes (
+	routeID varchar(50) NOT NULL,
+    PRIMARY KEY (route_id)
+);
+DROP TABLE IF EXISTS route_legs;
+CREATE TABLE route_legs (
+	routeID varchar(50) NOT NULL,
+    legID varchar(50) NOT NULL,
+    sequence varchar(50) NOT NULL,
+    PRIMARY KEY(routeID, legID),
+    CONSTRAINT route_legs_ibfk_1 FOREIGN KEY (routeID) REFERENCES routes (routeID),
+    CONSTRAINT route_legs_ibfk_2 FOREIGN KEY (legID) REFERENCES legs (legID)
+);
