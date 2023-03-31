@@ -84,7 +84,7 @@ CREATE TABLE person (
 ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS license;
-CREATE TABLE licence (
+CREATE TABLE license (
 	personID char(50) NOT NULL,
     licence char(100) NOT NULL,
     PRIMARY KEY (personID, licence),
@@ -248,4 +248,85 @@ VALUES
 ('SLC', 'Salt Lake City International Airport', 'Salt Lake City', 'UT', NULL),
 ('STL', 'St_Louis Lambert International Airport', 'Saint Louis', 'MO', NULL),
 ('STT', 'Cyril E_King Airport', 'Charlotte Amalie Saint Thomas', 'VI', NULL);
+
+INSERT INTO flight (flightID, routeID, support_airline, support_tail, progress, airplane_status, next_time) VALUES
+('AM_1523', 'circle_west_coast', 'American', 'n330ss', 2, 'on_ground', '14:30:00'),
+('DL_1174', 'northbound_east_coast', 'Delta', 'n106js', 0, 'on_ground', '08:00:00'),
+('DL_1243', 'westbound_north_nonstop', 'Delta', 'n110jn', 0, 'on_ground', '09:30:00'),
+('DL_3410', 'circle_east_coast', NULL, NULL, NULL, NULL, NULL),
+('SP_1880', 'circle_east_coast', 'Spirit', 'n256ap', 2, 'in_flight', '15:00:00'),
+('SW_1776', 'hub_xchg_southwest', 'Southwest', 'n401fj', 2, 'in_flight', '14:00:00'),
+('SW_610', 'local_texas', 'Southwest', 'n118fm', 2, 'in_flight', '11:30:00'),
+('UN_1899', 'eastbound_north_milk_run', 'United', 'n517ly', 0, 'on_ground', '09:30:00'),
+('UN_523', 'hub_xchg_southeast', 'United', 'n620la', 1, 'in_flight', '11:00:00'),
+('UN_717', 'circle_west_coast', NULL, NULL, NULL, NULL, NULL);
+
+INSERT INTO person (personID, first_name, last_name, locationID, taxID, experience, flying_airline, flying_tail, miles, isPilot, isPassenger)
+VALUES 
+('p1', 'Jeanne', 'Nelson', 'plane_1', '330-12-6907', 31, 'Delta', 'n106js', NULL, TRUE, FALSE),
+('p10', 'Lawrence', 'Morgan', 'plane_9', '769-60-1266', 15, 'Southwest', 'n401fj', NULL, TRUE, FALSE),
+('p11', 'Sandra', 'Cruz', 'plane_9', '369-22-9505', 22, 'Southwest', 'n401fj', NULL, TRUE, FALSE),
+('p12', 'Dan', 'Ball', 'plane_11', '680-92-5329', 24, 'Southwest', 'n118fm', NULL, TRUE, FALSE),
+('p13', 'Bryant', 'Figueroa', 'plane_2', '513-40-4168', 24, 'Delta', 'n110jn', NULL, TRUE, FALSE),
+('p14', 'Dana', 'Perry', 'plane_2', '454-71-7847', 13, 'Delta', 'n110jn', NULL, TRUE, FALSE),
+('p15', 'Matt', 'Hunt', 'plane_2', '153-47-8101', 30, 'Delta', 'n110jn', NULL, TRUE, FALSE),
+('p16', 'Edna', 'Brown', 'plane_15', '598-47-5172', 28, 'Spirit', 'n256ap', NULL, TRUE, FALSE),
+('p17', 'Ruby', 'Burgess', 'plane_15', '865-71-6800', 36, 'Spirit', 'n256ap', NULL, TRUE, FALSE),
+('p18', 'Esther', 'Pittman', 'port_2', '250-86-2784', 23, NULL, NULL, NULL, TRUE, FALSE),
+('p19', 'Doug', 'Fowler', 'port_4', '386-39-7881', 2, NULL, NULL, NULL, TRUE, FALSE),
+('p2', 'Roxanne', 'Byrd', 'plane_1', '842-88-1257', 9, 'Delta', 'n106js', NULL, TRUE, FALSE),
+('p20', 'Thomas', 'Olson', 'port_3', '522-44-3098', 28, NULL, NULL, NULL, TRUE, FALSE),
+('p21', 'Mona', 'Harrison', 'port_4', '621-34-5755', 2, NULL, NULL, 771, TRUE, TRUE),
+('p22', 'Arlene', 'Massey', 'port_2', '177-47-9877', 3, NULL, NULL, 374, TRUE, TRUE),
+('p23', 'Judith', 'Patrick', 'port_3', '528-64-7912', 12, NULL, NULL, 414, TRUE, TRUE),
+('p24', 'Reginald', 'Rhodes', 'plane_1', '803-30-1789', 34, NULL, NULL, 292, TRUE, TRUE),
+('p25', 'Vincent', 'Garcia', 'plane_1', '986-76-1587', 13, NULL, NULL, 390, true, true),
+('p26', 'Cheryl', 'Moore', 'plane_4', '584-77-5105', 20, NULL, NULL, 302, true, true),
+('p27', 'Michael', 'Rivera', 'plane_7', NULL, NULL, NULL, NULL, 470, false, true),
+('p28', 'Luther', 'Matthews', 'plane_8', NULL, NULL, NULL, NULL, 208, false, true),
+('p29', 'Moses', 'Parks', 'plane_8', NULL, NULL, NULL, NULL, 292, false, true),
+('p3', 'Tanya', 'Nguyen', 'plane_4', '750-24-7616', 11, 'American', 'n330ss', NULL, true, false),
+('p30', 'Ora', 'Steele', 'plane_9', NULL, NULL, NULL, NULL, 686, false, true),
+('p31', 'Antonio', 'Flores', 'plane_9', NULL, NULL, NULL, NULL, 547, false, true),
+('p32', 'Glenn', 'Ross', 'plane_11', NULL, NULL, NULL, NULL, 257, false, true),
+('p33', 'Irma', 'Thomas', 'plane_11', NULL, NULL, NULL, NULL, 564, false, true),
+('p34', 'Ann', 'Maldonado', 'plane_2', NULL, NULL, NULL, NULL, 211, false, true),
+('p35', 'Jeffrey', 'Cruz', 'plane_2', NULL, NULL, NULL, NULL, 233, false, true),
+('p36', 'Sonya', 'Price', 'plane_15', NULL, NULL, NULL, NULL, 293, false, true),
+('p37', 'Tracy', 'Hale', 'plane_15', NULL, NULL, NULL, NULL, 552, false, true),
+('p38', 'Albert', 'Simmons', 'port_1', NULL, NULL, NULL, NULL, 812, false, true),
+('p39', 'Karen', 'Terry', 'port_9', NULL, NULL, NULL, NULL, 541, false, true),
+('p4', 'Kendra', 'Jacobs', 'plane_4', '776-21-8098', 24, 'American', 'n330ss', NULL, true, false),
+('p40', 'Glen', 'Kelley', 'plane_4', NULL, NULL, NULL, NULL, 441, false, true),
+('p41', 'Brooke', 'Little', 'port_4', NULL, NULL, NULL, NULL, 875, false, true),
+('p42', 'Daryl', 'Nguyen', 'port_3', NULL, NULL, NULL, NULL, 691, false, true),
+('p43', 'Judy', 'Willis', 'port_1', NULL, NULL, NULL, NULL, 572, false, true),
+('p44', 'Marco', 'Klein', 'port_2', NULL, NULL, NULL, NULL, 572, false, true),
+('p45', 'Angelica', 'Hampton', 'port_5', NULL, NULL, NULL, NULL, 663, false, true),
+('p5', 'Jeff', 'Burton', 'plane_4', '933-93-2165', 27, 'American', 'n330ss', NULL, true, false),
+('p6', 'Randal', 'Parks', 'plane_7', '707-84-4555', 38, 'United', 'n517ly', NULL, true, false),
+('p7', 'Sonya', 'Owens', 'plane_7', '450-25-5617', 13, 'United', 'n517ly', NULL, true, false),
+('p8', 'Bennie', 'Palmer', 'plane_8', '701-38-2179', 12, 'United', 'n620la', NULL, true, false),
+('p9', 'Marlene', 'Warner', 'plane_8', '936-44-6941', 13, 'United', 'n620la', NULL, true, false);
+
+INSERT INTO tickets (ticketID, cost, carrier, customer, deplane_at) 
+VALUES 
+('tkt_dl_1', 450, 'DL_1174', 'p24', 'JFK'),
+('tkt_dl_2', 225, 'DL_1174', 'p25', 'JFK'),
+('tkt_am_3', 250, 'AM_1523', 'p26', 'LAX'),
+('tkt_un_4', 175, 'UN_1899', 'p27', 'DCA'),
+('tkt_un_5', 225, 'UN_523', 'p28', 'ATL'),
+('tkt_un_6', 100, 'UN_523', 'p29', 'ORD'),
+('tkt_sw_7', 400, 'SW_1776', 'p30', 'ORD'),
+('tkt_sw_8', 175, 'SW_1776', 'p31', 'ORD'),
+('tkt_sw_9', 125, 'SW_610', 'p32', 'HOU'),
+('tkt_sw_10', 425, 'SW_610', 'p33', 'HOU'),
+('tkt_dl_11', 500, 'DL_1243', 'p34', 'LAX'),
+('tkt_dl_12', 250, 'DL_1243', 'p35', 'LAX'),
+('tkt_sp_13', 225, 'SP_1880', 'p36', 'ATL'),
+('tkt_sp_14', 150, 'SP_1880', 'p37', 'DCA'),
+('tkt_un_15', 150, 'UN_523', 'p38', 'ORD'),
+('tkt_sp_16', 475, 'SP_1880', 'p39', 'ATL'),
+('tkt_am_17', 375, 'AM_1523', 'p40', 'ORD'),
+('tkt_am_18', 275, 'AM_1523', 'p41', 'LAX');
 
