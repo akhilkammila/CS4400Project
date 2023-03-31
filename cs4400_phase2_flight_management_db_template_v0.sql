@@ -112,8 +112,8 @@ DROP TABLE IF EXISTS route_leg;
 CREATE TABLE route_leg (
 	routeID varchar(50) NOT NULL,
     legID varchar(50) NOT NULL,
-    sequence varchar(50) NOT NULL,
-    PRIMARY KEY(routeID, legID),
+    sequence int NOT NULL,
+    PRIMARY KEY(routeID, legID, sequence),
     CONSTRAINT route_legs_ibfk_1 FOREIGN KEY (routeID) REFERENCES route (routeID),
     CONSTRAINT route_legs_ibfk_2 FOREIGN KEY (legID) REFERENCES leg (legID)
 );
