@@ -50,7 +50,7 @@ CREATE TABLE airplane ( -- accounted for
 
 DROP TABLE IF EXISTS airport;
 CREATE TABLE airport ( -- accounted for
-  airportID char(50) NOT NULL,
+  airportID varchar(50) NOT NULL,
   airport_name char(100) NOT NULL,
   city char(100) NOT NULL,
   state char(100) NOT NULL,
@@ -63,7 +63,7 @@ CREATE TABLE airport ( -- accounted for
 
 DROP TABLE IF EXISTS person;
 CREATE TABLE person ( -- accounted for
-  personID char(50) NOT NULL,
+  personID varchar(50) NOT NULL,
   first_name char(100) NOT NULL,
   last_name char(100) DEFAULT NULL,
   locationID char(50) NOT NULL,
@@ -121,8 +121,8 @@ DROP TABLE IF EXISTS flight;
 CREATE TABLE flight( -- accounted for
 	flightID varchar(50) NOT NULL,
     routeID varchar(50) NOT NULL,
-    support_airline varchar(50),
-    support_tail varchar(50),
+    support_airline char(50),
+    support_tail char(50),
     progress int,
     airplane_status varchar(100),
     next_time time,
@@ -247,6 +247,23 @@ VALUES
 ('SLC', 'Salt Lake City International Airport', 'Salt Lake City', 'UT', NULL),
 ('STL', 'St_Louis Lambert International Airport', 'Saint Louis', 'MO', NULL),
 ('STT', 'Cyril E_King Airport', 'Charlotte Amalie Saint Thomas', 'VI', NULL);
+
+INSERT INTO route (routeID)
+VALUES 
+    ('circle_east_coast'),
+    ('circle_west_coast'),
+    ('eastbound_north_milk_run'),
+    ('eastbound_north_nonstop'),
+    ('eastbound_south_milk_run'),
+    ('hub_xchg_southeast'),
+    ('hub_xchg_southwest'),
+    ('local_texas'),
+    ('northbound_east_coast'),
+    ('northbound_west_coast'),
+    ('southbound_midwest'),
+    ('westbound_north_milk_run'),
+    ('westbound_north_nonstop'),
+    ('westbound_south_nonstop');
 
 INSERT INTO flight (flightID, routeID, support_airline, support_tail, progress, airplane_status, next_time) VALUES
 ('AM_1523', 'circle_west_coast', 'American', 'n330ss', 2, 'on_ground', '14:30:00'),
@@ -376,22 +393,4 @@ VALUES
     ('leg_7', 600, 'DCA', 'ATL'),
     ('leg_8', 200, 'DCA', 'JFK'),
     ('leg_1', 600, 'ATL', 'IAD');
-
-
-INSERT INTO route (routeID)
-VALUES 
-    ('circle_east_coast'),
-    ('circle_west_coast'),
-    ('eastbound_north_milk_run'),
-    ('eastbound_north_nonstop'),
-    ('eastbound_south_milk_run'),
-    ('hub_xchg_southeast'),
-    ('hub_xchg_southwest'),
-    ('local_texas'),
-    ('northbound_east_coast'),
-    ('northbound_west_coast'),
-    ('southbound_midwest'),
-    ('westbound_north_milk_run'),
-    ('westbound_north_nonstop'),
-    ('westbound_south_nonstop');
 
