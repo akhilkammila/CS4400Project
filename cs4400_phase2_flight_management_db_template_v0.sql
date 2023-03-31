@@ -43,8 +43,6 @@ CREATE TABLE airplane (
   plane_type char(100) DEFAULT NULL,
   skids decimal(1, 0) DEFAULT NULL,
   props_or_jets decimal(1, 0) DEFAULT NULL,
-  
-  
   PRIMARY KEY (airlineID, tail_num),
   CONSTRAINT airplane_ibfk_1 FOREIGN KEY (airlineID) REFERENCES airline (airlineID),
   CONSTRAINT airplane_ibfk_2 FOREIGN KEY (locationID) REFERENCES location (locationID)
@@ -57,7 +55,6 @@ CREATE TABLE airport (
   city char(100) NOT NULL,
   state char(100) NOT NULL,
   locationID char(50) DEFAULT NULL,
-  
   PRIMARY KEY (airportID),
   UNIQUE KEY (airport_name),
   CONSTRAINT airport_ibfk_1 FOREIGN KEY (locationID) REFERENCES location (locationID)
