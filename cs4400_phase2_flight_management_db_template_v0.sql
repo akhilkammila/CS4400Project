@@ -85,8 +85,8 @@ CREATE TABLE person ( -- accounted for
 DROP TABLE IF EXISTS license;
 CREATE TABLE license (
 	personID char(50) NOT NULL,
-    licence char(100) NOT NULL,
-    PRIMARY KEY (personID, licence),
+    license char(100) NOT NULL,
+    PRIMARY KEY (personID, license),
     CONSTRAINT license_ibfk_1 FOREIGN KEY (personID) REFERENCES person (personID)
 );
 
@@ -167,7 +167,7 @@ INSERT INTO airplane VALUES
 ('American', 'n330ss', 4, 200, 'plane_4', 'jet', NULL, 2),
 ('American', 'n380sd', 5, 400, NULL, 'jet', NULL, 2),
 ('Delta', 'n106js', 4, 200, 'plane_1', 'jet', NULL, 2),
-('Delta', 'n110jn', 5, 600, 'plane_2', 'jet', 4, 2),
+('Delta', 'n110jn', 5, 600, 'plane_2', 'jet', NULL, 4),
 ('Delta', 'n127js', 4, 800, NULL, NULL, NULL, NULL),
 ('Delta', 'n156sq', 8, 100, NULL, NULL, NULL, NULL),
 ('JetBlue', 'n161fk', 4, 200, NULL, 'jet', NULL, 2),
@@ -392,7 +392,13 @@ VALUES
     ('leg_6', 200, 'DAL', 'HOU'),
     ('leg_7', 600, 'DCA', 'ATL'),
     ('leg_8', 200, 'DCA', 'JFK'),
-    ('leg_1', 600, 'ATL', 'IAD');
+    ('leg_1', 600, 'ATL', 'IAD'),
+	('leg_11', 600, 'IAD', 'ORD'),
+    ('leg_13', 1400, 'IAH', 'LAX'),
+    ('leg_14', 2400, 'ISP', 'BFI'),
+    ('leg_15', 800, 'JFK', 'ATL'),
+    ('leg_2', 600, 'ATL', 'IAH'),
+    ('leg_5', 1000, 'BFI', 'LAX');
 
 INSERT INTO route_leg (routeID, legID, sequence)
 VALUES
@@ -433,3 +439,43 @@ VALUES
 
     ('westbound_north_nonstop', 'leg_17', '1'),
     ('westbound_south_nonstop', 'leg_27', '1');
+    
+INSERT INTO license (personID, license) VALUES
+('p1', 'jet'),
+('p10', 'jet'),
+('p11', 'jet'),
+('p11', 'prop'),
+('p12', 'prop'),
+('p13', 'jet'),
+('p14', 'jet'),
+('p15', 'jet'),
+('p15', 'prop'),
+('p15', 'testing'),
+('p16', 'jet'),
+('p17', 'jet'),
+('p17', 'prop'),
+('p18', 'jet'),
+('p19', 'jet'),
+('p2', 'jet'),
+('p2', 'prop'),
+('p20', 'jet'),
+('p21', 'jet'),
+('p21', 'prop'),
+('p22', 'jet'),
+('p23', 'jet'),
+('p24', 'jet'),
+('p24', 'prop'),
+('p24', 'testing'),
+('p25', 'jet'),
+('p26', 'jet'),
+('p3', 'jet'),
+('p4', 'jet'),
+('p4', 'prop'),
+('p5', 'jet'),
+('p6', 'jet'),
+('p6', 'prop'),
+('p7', 'jet'),
+('p8', 'prop'),
+('p9', 'jet'),
+('p9', 'prop'),
+('p9', 'testing');
