@@ -394,3 +394,42 @@ VALUES
     ('leg_8', 200, 'DCA', 'JFK'),
     ('leg_1', 600, 'ATL', 'IAD');
 
+INSERT INTO route_leg (routeID, legID, sequence)
+VALUES
+    ('circle_east_coast', 'leg_4', '1'),
+    ('circle_east_coast', 'leg_20', '2'),
+    ('circle_east_coast', 'leg_7', '3'),
+
+    ('circle_west_coast', 'leg_18', '1'),
+    ('circle_west_coast', 'leg_10', '2'),
+    ('circle_west_coast', 'leg_22', '3'),
+  
+    ('eastbound_north_milk_run', 'leg_24', '1'),
+    ('eastbound_north_milk_run', 'leg_20', '2'),
+    ('eastbound_north_milk_run', 'leg_8', '3'),
+
+    ('eastbound_north_nonstop', 'leg_23', '1'),
+    ('eastbound_south_milk_run', 'leg_18', '1'),
+    ('eastbound_south_milk_run', 'leg_9', '2'),
+    ('eastbound_south_milk_run', 'leg_1', '3'),
+    ('hub_xchg_southeast', 'leg_25', '1'),
+    ('hub_xchg_southeast', 'leg_4', '2'),
+ 
+    ('hub_xchg_southwest', 'leg_22', '1'),
+    ('hub_xchg_southwest', 'leg_26', '2'),
+
+    ('local_texas', 'leg_12', '1'),
+    ('local_texas', 'leg_6', '2'),
+    ('northbound_east_coast', 'leg_3', '1'),
+
+    ('northbound_west_coast', 'leg_19', '1'),
+
+    ('southbound_midwest', 'leg_21', '1'),
+
+    ('westbound_north_milk_run', 'leg_16', '1'),
+    ('westbound_north_milk_run', 'leg_22', '2'),
+    ('westbound_north_milk_run', 'leg_19', '3'),
+
+
+    ('westbound_north_nonstop', 'leg_17', '1'),
+    ('westbound_south_nonstop', 'leg_27', '1');
