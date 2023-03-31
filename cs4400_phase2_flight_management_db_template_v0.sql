@@ -79,7 +79,6 @@ CREATE TABLE person ( -- accounted for
   UNIQUE KEY (taxID),
   CONSTRAINT person_ibfk_1 FOREIGN KEY (locationID) REFERENCES location (locationID),
   CONSTRAINT person_ibfk_2 FOREIGN KEY (flying_airline, flying_tail) REFERENCES airplane (airlineID, tail_num)
-  -- CONSTRAINT person_ibfk_3 FOREIGN KEY (flying_tail) REFERENCES airplane (tail_num)
 
 ) ENGINE=InnoDB;
 
@@ -128,7 +127,7 @@ CREATE TABLE flight( -- accounted for
     airplane_status varchar(100),
     next_time time,
     PRIMARY KEY(flightID),
-    CONSTRAINT flights_ibfk_1 FOREIGN KEY (routeID) REFERENCES route (routeID),
+	CONSTRAINT flights_ibfk_1 FOREIGN KEY (routeID) REFERENCES route (routeID),
     CONSTRAINT flights_ibfk_2 FOREIGN KEY (support_airline, support_tail) REFERENCES airplane (airlineID, tail_num)
 );
 DROP TABLE IF EXISTS ticket;
@@ -139,9 +138,9 @@ CREATE TABLE ticket ( -- accounted for
     customer varchar(50) NOT NULL,
     deplane_at varchar(50) NOT NULL,
     PRIMARY KEY (ticketID),
-    CONSTRAINT tickets_ibfk_1 FOREIGN KEY (carrier) REFERENCES flight (flightID),
-    CONSTRAINT tickets_ibfk_2 FOREIGN KEY (customer) REFERENCES person (personID),
-    CONSTRAINT tickets_ibfk_3 FOREIGN KEY (deplane_at) REFERENCES airport(airportID)
+	CONSTRAINT tickets_ibfk_1 FOREIGN KEY (carrier) REFERENCES flight (flightID),
+	CONSTRAINT tickets_ibfk_2 FOREIGN KEY (customer) REFERENCES person (personID),
+	CONSTRAINT tickets_ibfk_3 FOREIGN KEY (deplane_at) REFERENCES airport(airportID)
 );
 
 DROP TABLE IF EXISTS seat;
@@ -360,7 +359,6 @@ VALUES
     ('leg_18', 1200, 'LAX', 'DFW'),
     ('leg_24', 1800, 'SEA', 'ORD'),
     ('leg_23', 2400, 'SEA', 'JFK'),
-    ('leg_18', 1200, 'LAX', 'DFW'),
     ('leg_25', 600, 'ORD', 'ATL'),
     ('leg_22', 800, 'ORD', 'LAX'),
     ('leg_12', 200, 'IAH', 'DAL'),
@@ -372,17 +370,12 @@ VALUES
     ('leg_27', 1600, 'ATL', 'LAX'),
     ('leg_20', 600, 'ORD', 'DCA'),
     ('leg_10', 800, 'DFW', 'ORD'),
-    ('leg_20', 600, 'ORD', 'DCA'),
     ('leg_9', 800, 'DFW', 'ATL'),
-    ('leg_4', 600, 'ATL', 'ORD'),
     ('leg_26', 800, 'LAX', 'ORD'),
     ('leg_6', 200, 'DAL', 'HOU'),
-    ('leg_22', 800, 'ORD', 'LAX'),
     ('leg_7', 600, 'DCA', 'ATL'),
-    ('leg_22', 800, 'ORD', 'LAX'),
     ('leg_8', 200, 'DCA', 'JFK'),
-    ('leg_1', 600, 'ATL', 'IAD'),
-    ('leg_19', 1000, 'LAX', 'SEA');
+    ('leg_1', 600, 'ATL', 'IAD');
 
 
 INSERT INTO route (routeID)
