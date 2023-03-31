@@ -16,7 +16,7 @@ use flight_management;
 -- Define the database structures and enter the denormalized data
 
 DROP TABLE IF EXISTS airline;
-CREATE TABLE airline (
+CREATE TABLE airline ( -- accounted for
   airlineID char(50) NOT NULL,
   revenue decimal(9, 0) NOT NULL,
   
@@ -26,7 +26,7 @@ CREATE TABLE airline (
 
 
 DROP TABLE IF EXISTS location;
-CREATE TABLE location (
+CREATE TABLE location ( -- accounted for
 
   locationID char(50) NOT NULL,
   PRIMARY KEY (locationID)
@@ -34,7 +34,7 @@ CREATE TABLE location (
 ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS airplane;
-CREATE TABLE airplane (
+CREATE TABLE airplane ( -- accounted for
   airlineID char(50) NOT NULL,
   tail_num char(50) NOT NULL,
   seat_capacity decimal(1, 0) NOT NULL,
@@ -49,7 +49,7 @@ CREATE TABLE airplane (
 ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS airport;
-CREATE TABLE airport (
+CREATE TABLE airport ( -- accounted for
   airportID char(50) NOT NULL,
   airport_name char(100) NOT NULL,
   city char(100) NOT NULL,
@@ -62,7 +62,7 @@ CREATE TABLE airport (
 ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS person;
-CREATE TABLE person (
+CREATE TABLE person ( -- accounted for
   personID char(50) NOT NULL,
   first_name char(100) NOT NULL,
   last_name char(100) DEFAULT NULL,
@@ -92,13 +92,13 @@ CREATE TABLE license (
 );
 
 DROP TABLE IF EXISTS route;
-CREATE TABLE route (
+CREATE TABLE route ( -- accounted for 
 	routeID varchar(50) NOT NULL,
     PRIMARY KEY (routeID)
 );
 
 DROP TABLE IF EXISTS leg;
-CREATE TABLE leg (
+CREATE TABLE leg ( -- accounted for
 	legID varchar(50) NOT NULL,
     distance int NOT NULL,
     departure varchar(50),
@@ -119,7 +119,7 @@ CREATE TABLE route_leg (
 );
 
 DROP TABLE IF EXISTS flight;
-CREATE TABLE flight(
+CREATE TABLE flight( -- accounted for
 	flightID varchar(50) NOT NULL,
     routeID varchar(50) NOT NULL,
     support_airline varchar(50),
@@ -132,7 +132,7 @@ CREATE TABLE flight(
     CONSTRAINT flights_ibfk_2 FOREIGN KEY (support_airline, support_tail) REFERENCES airplane (airlineID, tail_num)
 );
 DROP TABLE IF EXISTS ticket;
-CREATE TABLE ticket (
+CREATE TABLE ticket ( -- accounted for
 	ticketID varchar(50) NOT NULL,
     cost int NOT NULL,
     carrier varchar(50) NOT NULL,
@@ -145,7 +145,7 @@ CREATE TABLE ticket (
 );
 
 DROP TABLE IF EXISTS seat;
-CREATE TABLE seat (
+CREATE TABLE seat ( -- accounted for
 	ticketID varchar(50) NOT NULL,
     seat varchar(100) NOT NULL,
     PRIMARY KEY (ticketID, seat),
@@ -309,7 +309,7 @@ VALUES
 ('p8', 'Bennie', 'Palmer', 'plane_8', '701-38-2179', 12, 'United', 'n620la', NULL, true, false),
 ('p9', 'Marlene', 'Warner', 'plane_8', '936-44-6941', 13, 'United', 'n620la', NULL, true, false);
 
-INSERT INTO tickets (ticketID, cost, carrier, customer, deplane_at) 
+INSERT INTO ticket (ticketID, cost, carrier, customer, deplane_at) 
 VALUES 
 ('tkt_dl_1', 450, 'DL_1174', 'p24', 'JFK'),
 ('tkt_dl_2', 225, 'DL_1174', 'p25', 'JFK'),
@@ -329,4 +329,76 @@ VALUES
 ('tkt_sp_16', 475, 'SP_1880', 'p39', 'ATL'),
 ('tkt_am_17', 375, 'AM_1523', 'p40', 'ORD'),
 ('tkt_am_18', 275, 'AM_1523', 'p41', 'LAX');
+
+INSERT INTO seat (ticketID, seat) VALUES
+('tkt_dl_1', '1C'),
+('tkt_dl_1', '2F'),
+('tkt_dl_2', '2D'),
+('tkt_am_3', '3B'),
+('tkt_un_4', '2B'),
+('tkt_un_5', '1A'),
+('tkt_un_6', '3B'),
+('tkt_sw_7', '3C'),
+('tkt_sw_8', '3E'),
+('tkt_sw_9', '1C'),
+('tkt_sw_10', '1D'),
+('tkt_dl_11', '1E'),
+('tkt_dl_11', '1B'),
+('tkt_dl_11', '2F'),
+('tkt_dl_12', '2A'),
+('tkt_sp_13', '1A'),
+('tkt_sp_14', '2B'),
+('tkt_un_15', '1B'),
+('tkt_sp_16', '2C'),
+('tkt_sp_16', '2E'),
+('tkt_am_17', '2B'),
+('tkt_am_18', '2A');
+
+INSERT INTO leg (legID, distance, departure, arrival)
+VALUES 
+    ('leg_4', 600, 'ATL', 'ORD'),
+    ('leg_18', 1200, 'LAX', 'DFW'),
+    ('leg_24', 1800, 'SEA', 'ORD'),
+    ('leg_23', 2400, 'SEA', 'JFK'),
+    ('leg_18', 1200, 'LAX', 'DFW'),
+    ('leg_25', 600, 'ORD', 'ATL'),
+    ('leg_22', 800, 'ORD', 'LAX'),
+    ('leg_12', 200, 'IAH', 'DAL'),
+    ('leg_3', 800, 'ATL', 'JFK'),
+    ('leg_19', 1000, 'LAX', 'SEA'),
+    ('leg_21', 800, 'ORD', 'DFW'),
+    ('leg_16', 800, 'JFK', 'ORD'),
+    ('leg_17', 2400, 'JFK', 'SEA'),
+    ('leg_27', 1600, 'ATL', 'LAX'),
+    ('leg_20', 600, 'ORD', 'DCA'),
+    ('leg_10', 800, 'DFW', 'ORD'),
+    ('leg_20', 600, 'ORD', 'DCA'),
+    ('leg_9', 800, 'DFW', 'ATL'),
+    ('leg_4', 600, 'ATL', 'ORD'),
+    ('leg_26', 800, 'LAX', 'ORD'),
+    ('leg_6', 200, 'DAL', 'HOU'),
+    ('leg_22', 800, 'ORD', 'LAX'),
+    ('leg_7', 600, 'DCA', 'ATL'),
+    ('leg_22', 800, 'ORD', 'LAX'),
+    ('leg_8', 200, 'DCA', 'JFK'),
+    ('leg_1', 600, 'ATL', 'IAD'),
+    ('leg_19', 1000, 'LAX', 'SEA');
+
+
+INSERT INTO route (routeID)
+VALUES 
+    ('circle_east_coast'),
+    ('circle_west_coast'),
+    ('eastbound_north_milk_run'),
+    ('eastbound_north_nonstop'),
+    ('eastbound_south_milk_run'),
+    ('hub_xchg_southeast'),
+    ('hub_xchg_southwest'),
+    ('local_texas'),
+    ('northbound_east_coast'),
+    ('northbound_west_coast'),
+    ('southbound_midwest'),
+    ('westbound_north_milk_run'),
+    ('westbound_north_nonstop'),
+    ('westbound_south_nonstop');
 
