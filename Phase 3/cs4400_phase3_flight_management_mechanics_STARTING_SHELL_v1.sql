@@ -76,7 +76,12 @@ delimiter //
 create procedure add_airport (in ip_airportID char(3), in ip_airport_name varchar(200),
     in ip_city varchar(100), in ip_state char(2), in ip_locationID varchar(50))
 sp_main: begin
-
+	if ip_airportID in (select airportID from airport)
+		then leave sp_main;
+	end if;
+	if ip_state = NULL or ip_city = NUll
+		then leave sp_main;
+	end if;
 end //
 delimiter ;
 
@@ -134,7 +139,7 @@ sp_main: begin
 end //
 delimiter ;
 
--- [6] purchase_ticket_and_seat()
+-- [6] purchase_ticket_and_seat() - Dongjae
 -- -----------------------------------------------------------------------------
 /* This stored procedure creates a new ticket.  The cost of the flight is optional
 since it might have been a gift, purchased with frequent flyer miles, etc.  Each
@@ -200,7 +205,7 @@ sp_main: begin
 end //
 delimiter ;
 
--- [10] flight_landing()
+-- [10] flight_landing() - Dongjae
 -- -----------------------------------------------------------------------------
 /* This stored procedure updates the state for a flight landing at the next airport
 along it's route.  The time for the flight should be moved one hour into the future
@@ -261,7 +266,7 @@ sp_main: begin
 end //
 delimiter ;
 
--- [14] assign_pilot()
+-- [14] assign_pilot() - dongjae
 -- -----------------------------------------------------------------------------
 /* This stored procedure assigns a pilot as part of the flight crew for a given
 airplane.  The pilot being assigned must have a license for that type of airplane,
@@ -321,7 +326,7 @@ sp_main: begin
 end //
 delimiter ;
 
--- [18] remove_pilot_role()
+-- [18] remove_pilot_role() - dongjae
 -- -----------------------------------------------------------------------------
 /* This stored procedure removes the pilot role from person.  The pilot must not
 be assigned to a flight; or, if they are assigned to a flight, then that flight
@@ -363,7 +368,7 @@ create or replace view people_in_the_air (departing_from, arriving_at, num_airpl
 	num_passengers, joint_pilots_passengers, person_list) as
 select null, null, 0, null, null, null, null, 0, 0, null, null;
 
--- [22] people_on_the_ground()
+-- [22] people_on_the_ground() - dongjae
 -- -----------------------------------------------------------------------------
 /* This view describes where people who are currently on the ground are located. */
 -- -----------------------------------------------------------------------------
