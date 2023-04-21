@@ -34,33 +34,34 @@ create procedure add_airplane (in ip_airlineID varchar(50), in ip_tail_num varch
     in ip_plane_type varchar(100), in ip_skids boolean, in ip_propellers integer,
     in ip_jet_engines integer)
 sp_main: begin
+	-- Check if the inputs are valid.
+	if (ip_airlineID is null or ip_tail_num is null or ip_seat_capacity is null or
+		ip_speed is null) 
+        then leave sp_main;
+	end if;
 
--- Nonzero seat capacity and speed
-IF ip_speed <= 0 OR ip_seat_capacity <= 0 THEN LEAVE sp_main; END IF;
+	if (ip_seat_capacity <= 0 or ip_speed <= 0) 
+    then leave sp_main;
+	end if;
 
--- Insert the new airplane
-INSERT INTO airplanes (
-airlineID,
-tail_num,
-seat_capacity,
-speed,
-locationID,
-plane_type,
-skids,
-propellers,
-jet_engines
-) VALUES (
-ip_airlineID,
-ip_tail_num,
-ip_seat_capacity,
-ip_speed,
-ip_locationID,
-ip_plane_type,
-ip_skids,
-ip_propellers,
-ip_jet_engines
-);
+	if (ip_airlineID not in (select airlineID from airline))
+    then leave sp_main;
+    end if;
+	-- Check if the airplane's tail number is unique for the given airline.
+	if exists (select * from airplanes where airlineID = ip_airlineID and tail_num = ip_tail_num) 
+    then leave sp_main;
+	end if;
 
+	-- Check if the airplane's location is unique across the entire database.
+	if (locationID is not null)
+    then
+    if (locationID not in (select * from location))
+    then leave sp_main;
+    end if;
+	end if;
+
+	-- Insert the new airplane into the database.
+	insert into airplanes values (ip_airlineID, ip_tail_num, ip_seat_capacity, ip_speed, ip_locationID, ip_plane_type, ip_skids, ip_propellers, ip_jet_engines);
 end //
 delimiter ;
 
