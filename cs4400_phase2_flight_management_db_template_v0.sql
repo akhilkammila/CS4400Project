@@ -85,8 +85,8 @@ CREATE TABLE person ( -- accounted for
 DROP TABLE IF EXISTS license;
 CREATE TABLE license (
 	personID char(50) NOT NULL,
-    licence char(100) NOT NULL,
-    PRIMARY KEY (personID, licence),
+    license char(100) NOT NULL,
+    PRIMARY KEY (personID, license),
     CONSTRAINT license_ibfk_1 FOREIGN KEY (personID) REFERENCES person (personID)
 );
 
