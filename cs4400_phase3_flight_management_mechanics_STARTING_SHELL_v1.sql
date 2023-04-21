@@ -53,9 +53,9 @@ sp_main: begin
 	end if;
 
 	-- Check if the airplane's location is unique across the entire database.
-	if (locationID is not null)
+	if (ip_locationID is not null)
     then
-    if (locationID not in (select * from location))
+    if (ip_locationID not in (select * from location))
     then leave sp_main;
     end if;
 	end if;
@@ -131,7 +131,7 @@ create procedure offer_flight (in ip_flightID varchar(50), in ip_routeID varchar
     in ip_support_airline varchar(50), in ip_support_tail varchar(50), in ip_progress integer,
     in ip_airplane_status varchar(100), in ip_next_time time)
 sp_main: begin
-
+	
 end //
 delimiter ;
 
