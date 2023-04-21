@@ -77,12 +77,20 @@ delimiter //
 create procedure add_airport (in ip_airportID char(3), in ip_airport_name varchar(200),
     in ip_city varchar(100), in ip_state char(2), in ip_locationID varchar(50))
 sp_main: begin
+-- check if primary key is null
+	if ip_airportID is null
+		then leave sp_main;
+	end if;
+-- check to see if airportID works
 	if ip_airportID in (select airportID from airport)
 		then leave sp_main;
 	end if;
-	if ip_state = NULL or ip_city = NUll
+-- check if city or state is null
+	if ip_state is NULL or ip_city is NUll
 		then leave sp_main;
 	end if;
+-- possible checks to see if name is longer than 
+    insert into airport values(ip_airportID, ip_airport_name, ip_city, ip_state, ip_locationID);
 end //
 delimiter ;
 
@@ -156,7 +164,24 @@ create procedure purchase_ticket_and_seat (in ip_ticketID varchar(50), in ip_cos
 	in ip_carrier varchar(50), in ip_customer varchar(50), in ip_deplane_at char(3),
     in ip_seat_number varchar(50))
 sp_main: begin
-
+	if ticketId is NULL or seatID is NULL
+		then leave sp_main;
+	end if;
+    if ip_customer not in (select personID from person)
+		then leave sp_main;
+	end if;
+    if ip_carrier not in (select flightID from flight)
+		then leave sp_main;
+	end if;
+    -- check to see if deplane before final or final airport on route 
+    if ip_deplane_at is NULL
+		then leave sp_main;
+	end if;
+    if ip_seat_number in (select seat_number from ticket_seats)
+		then leave sp_main;
+	end if;
+    insert into ticket values (id_ticketID, ip_cost, ip_carrier, ip_customer, ip_deplane_at);
+    insert into ticket_seats values (id_ticketID, ip_seat_number);
 end //
 delimiter ;
 
@@ -218,7 +243,10 @@ drop procedure if exists flight_landing;
 delimiter //
 create procedure flight_landing (in ip_flightID varchar(50))
 sp_main: begin
-
+	if ip_flightID is NULL
+		then leave sp_main;
+	end if;
+    
 end //
 delimiter ;
 
