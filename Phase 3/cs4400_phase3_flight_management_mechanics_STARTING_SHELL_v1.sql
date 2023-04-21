@@ -246,7 +246,20 @@ sp_main: begin
 	if ip_flightID is NULL
 		then leave sp_main;
 	end if;
-    
+    -- updating flight
+    update flight
+    set next_time = DATEADD(hour, 1, flight.next_time)
+    where ip_flightID = flightID;
+    -- updating pilot
+    update pilot
+    set experience = experience + 1
+    where ((pilot.flying_airline) in (select support_airline from flight where ip_flightID = flightID))
+    and ((pilot.flying_tail) in (select support_tail from flight where ip_flightID = flightID));
+    -- updating passenger
+    update passenger
+    set passenger.miles = passenger.miles + 
+    (select distance from leg right join route_path on leg.legID = route_path.legID where route_path.routeID = flight.routeID)
+    where personID in (select customer from ticket where ticket.carrier = ip_flightID);
 end //
 delimiter ;
 
