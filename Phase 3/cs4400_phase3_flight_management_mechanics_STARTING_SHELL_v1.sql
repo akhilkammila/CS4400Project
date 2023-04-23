@@ -345,8 +345,8 @@ sp_main: begin
 	if (ip_flightID is NULL or ip_personID is NULL) 
 		then leave sp_main;
 	end if;
-    if ((select flying_airline from pilot where ip_personID = personID) is NULL) and
-    ((select flying_tail from pilot where ip_personID = personID) is NULL)
+    if ((select flying_airline from pilot where ip_personID = personID) is not NULL) and
+    ((select flying_tail from pilot where ip_personID = personID) is not NULL)
 		then leave sp_main;
 	end if;
     if (ip_flightID in (select flightID from flight where flight.progress = 'in_flight'))
