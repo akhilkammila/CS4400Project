@@ -35,6 +35,7 @@ create procedure add_airplane (in ip_airlineID varchar(50), in ip_tail_num varch
     in ip_jet_engines integer)
 sp_main: begin
 
+
 end //
 delimiter ;
 
@@ -87,6 +88,20 @@ delimiter //
 create procedure grant_pilot_license (in ip_personID varchar(50), in ip_license varchar(100))
 sp_main: begin
 
+if (ip_personID is null or ip_license is null)
+then leave sp_main;
+end if;
+
+if (ip_personID not in (select personID from pilot))
+then leave sp_main;
+end if;
+
+#this assumes that license could be any string and not limited to 'jet', 'prop' or 'testing'
+if exists(select * from pilot_licenses where personID = ip_personID and license = ip_license)
+then leave sp_main;
+end if;
+
+insert into pilot_licenses values (ip_personID, ip_license);
 end //
 delimiter ;
 
@@ -156,6 +171,22 @@ delimiter //
 create procedure start_route (in ip_routeID varchar(50), in ip_legID varchar(50))
 sp_main: begin
 
+	if (ip_routeID is null or ip_legID is null)
+	then leave sp_main;
+	end if;
+
+	#leave if route already exists
+	if (ip_routeID in (select routeID from route))
+	then leave sp_main;
+	end if;
+
+	#leave if the leg doesn't exist
+	if ip_legID not in (select legID from leg)
+	then leave sp_main;
+	end if;
+
+	insert into route values(ip_routeID);
+	insert into route_path values(ip_routeID, ip_legID, 1);
 end //
 delimiter ;
 
@@ -217,6 +248,74 @@ drop procedure if exists passengers_board;
 delimiter //
 create procedure passengers_board (in ip_flightID varchar(50))
 sp_main: begin
+
+declare var_flightID varchar(50);
+declare var_flight_airline varchar(50);
+declare var_flight_tail varchar(50);
+declare var_flight_progress integer;
+
+if (ip_flightID is null)
+then leave sp_main;
+end if;
+
+if (ip_flightID not in (select flightID from flight))
+then leave sp_main;
+end if;
+
+if (select airplane_status from flight where flightID = ip_flightID) != 'on_ground'
+then leave sp_main;
+end if;
+
+#checking if support_airline and support_tail are not null
+if (select support_airline from flight where flightID = ip_flightID) is null
+then leave sp_main;
+end if;
+
+if (select support_tail from flight where flightID = ip_flightID) is null
+then leave sp_main;
+end if;
+
+select routeID, support_airline, support_tail into var_flightID, var_flight_airline, var_flight_tail from flight where flightID = ip_flightID;
+
+-- select @loc = locationID 
+-- from flight inner join airplane on flight.support_airline = airplane.support_airline
+-- and flight.support_tail = airplane.support_tail
+-- where flightID = ip_flightID
+
+#checking if location is null
+if (select locationID from airplane where
+airlineID = (select support_airline from flight where flightID = ip_flightID) and
+tail_num = (select support_tail from flight where flightID = ip_flightID)) is null
+then leave sp_main;
+end if;
+
+if (ip_flightID not in (select carrier from ticket))
+then leave sp_main;
+end if;
+select customer from ticket 
+where carrier = ip_flightID;
+
+
+update person
+	set locationID = (
+   	 select locationID from airplane
+    	where airlineID = var_flight_airline and tail_num = var_flight_tail
+    )
+	# the boarding passengers must be located in the airport of the upcoming leg's departure airport
+	where locationID = (
+   	 select locationID from airport
+   	 where airportID = (
+   		 select departure from leg
+   		 where legID = (
+   			 select legID from route_path
+   			 where routeID = var_flightID and sequence = var_flight_progress + 1
+   		 )
+   	 )
+    # and must own tickets for the flight
+    ) and (
+   	 select count(*) from ticket
+    	where carrier = ip_flightID and customer = personID
+    ) > 0;
 
 end //
 delimiter ;
