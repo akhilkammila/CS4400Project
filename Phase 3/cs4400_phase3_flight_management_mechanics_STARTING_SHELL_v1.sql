@@ -812,6 +812,10 @@ if ip_personID is NULL
     where personID = ip_personID
     group by personID);
     
+    if (@airplane_status = 'in_flight')
+		then leave sp_main;
+	end if;
+    
     if ((select flying_airline from pilot where ip_personID = personId) is not NULL and 
     (select flying_tail from pilot where ip_personID = personId) is not NULL) and (@progress > 0 and @progress < @num_legs) and (@airplane_status = 'on_ground')
 		then leave sp_main;
