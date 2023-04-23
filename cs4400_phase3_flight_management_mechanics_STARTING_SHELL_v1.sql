@@ -670,9 +670,24 @@ delimiter //
 create procedure recycle_crew (in ip_flightID varchar(50))
 sp_main: begin
 	declare ending_plane_locationID varchar(50);
+declare max_sequence_num integer;
+
+declare curr_routeID varchar(50);
+declare last_legID varchar(50);
+declare arrival_airport char(3);
+declare ending_airport_locationID varchar(50);
 
 -- check if flight has ended
-if (SELECT progress FROM flight WHERE flightID = ip_flightID) != 3
+-- 1. get max sequence number
+SELECT MAX(rp.sequence)
+FROM flight as f
+JOIN route_path as rp
+ON f.routeID = rp.routeID
+WHERE f.flightID = ip_flightID
+GROUP BY(f.routeID)
+into max_sequence_num;
+-- 2. check if flight's progrss equals max sequence number
+if (SELECT progress FROM flight WHERE flightID = ip_flightID) != max_sequence_num
 	then
     leave sp_main;
 end if;
@@ -680,6 +695,8 @@ end if;
 -- check if all passengers have disembarked
 -- for this we have to join flight with airplane, and get the plane's locationID
 -- then check if any people are on that airplane (if they are at that locationID)
+
+-- get plane locationID
 select locationID
 from flight as f
 join airplane as a
@@ -687,12 +704,16 @@ on f.support_airline = a.airlineID and f.support_tail = a.tail_num
 where f.flightID = ip_flightID
 into ending_plane_locationID;
 
-if exists (select * from person as p where p.locationID = ending_plane_locationID)
+-- check that no passenger is on the pain
+if exists
+	(select * from person as p join passenger as pa
+	where p.locationID = ending_plane_locationID
+    and p.personID = pa.personID)
+    
 	then leave sp_main;
 end if;
 
-
--- Get the pilots to release and put them in a table
+-- get the pilots to release and put them in a table
 DROP TABLE if EXISTS pilotsToRelease;
 CREATE TABLE pilotsToRelease(
 	pilot_id varchar(50) PRIMARY KEY
@@ -705,9 +726,20 @@ JOIN pilot as p
 ON f.support_airline = p.flying_airline and f.supporT_tail = p.flying_tail
 WHERE f.flightID = ip_flightID;
 
--- Update the pilots, clear their flying airline and tail
+-- Update the pilots in the pilot table, clear their flying airline and tail
 UPDATE pilot
 SET flying_airline = NULL, flying_tail = NULL
+WHERE personID in (SELECT * FROM pilotsToRelease);
+
+-- Update the pilots in the person table
+-- to do this, we first need to get the port that the plane is now at
+select routeID from flight where flightID = ip_flightID into curr_routeID;
+select legID from route_path where routeID = curr_routeID and sequence = max_sequence_num into last_legID;
+select arrival from leg where legID = last_legID into arrival_airport;
+select locationID from airport where airportID = arrival_airport into ending_airport_locationID;
+
+UPDATE person
+SET locationID = ending_airport_locationID
 WHERE personID in (SELECT * FROM pilotsToRelease);
 
 DROP TABLE if EXISTS pilotsToRelease;
@@ -980,13 +1012,13 @@ sp_main: begin
     set @stat = (select airplane_status from flight where flightID = @f1);
     if  (@stat = 'in_flight')
     then 
-		call flight_landing(@f1);
-        call passengers_disembark(@f1);
-        call recycle_crew(@f1);
-        call retire_flight(@f1);
+		call flight_landing(@fl);
+        call passengers_disembark(@fl);
+        call recycle_crew(@fl);
+        call retire_flight(@fl);
 	else
-		call passengers_board(@f1);
-        call flight_takeoff(@f1);
+		call passengers_board(@fl);
+        call flight_takeoff(@fl);
     end if;
     
 end //
