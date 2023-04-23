@@ -48,20 +48,20 @@ sp_main: begin
     then leave sp_main;
     end if;
 	-- Check if the airplane's tail number is unique for the given airline.
-	if exists (select * from airplanes where airlineID = ip_airlineID and tail_num = ip_tail_num) 
+	if exists (select * from airplane where airlineID = ip_airlineID and tail_num = ip_tail_num) 
     then leave sp_main;
 	end if;
 
 	-- Check if the airplane's location is unique across the entire database.
-	if (locationID is not null)
+	if (ip_locationID is not null)
     then
-    if (locationID not in (select * from location))
+    if (ip_locationID not in (select * from location))
     then leave sp_main;
     end if;
 	end if;
 
 	-- Insert the new airplane into the database.
-	insert into airplanes values (ip_airlineID, ip_tail_num, ip_seat_capacity, ip_speed, ip_locationID, ip_plane_type, ip_skids, ip_propellers, ip_jet_engines);
+	insert into airplane values (ip_airlineID, ip_tail_num, ip_seat_capacity, ip_speed, ip_locationID, ip_plane_type, ip_skids, ip_propellers, ip_jet_engines);
 end //
 delimiter ;
 
@@ -164,7 +164,7 @@ create procedure purchase_ticket_and_seat (in ip_ticketID varchar(50), in ip_cos
 	in ip_carrier varchar(50), in ip_customer varchar(50), in ip_deplane_at char(3),
     in ip_seat_number varchar(50))
 sp_main: begin
-	if ticketId is NULL or seatID is NULL
+	if ip_ticketID is NULL or ip_seat_number is NULL
 		then leave sp_main;
 	end if;
     if ip_customer not in (select personID from person)
@@ -180,8 +180,8 @@ sp_main: begin
     if ip_seat_number in (select seat_number from ticket_seats)
 		then leave sp_main;
 	end if;
-    insert into ticket values (id_ticketID, ip_cost, ip_carrier, ip_customer, ip_deplane_at);
-    insert into ticket_seats values (id_ticketID, ip_seat_number);
+    insert into ticket values (ip_ticketID, ip_cost, ip_carrier, ip_customer, ip_deplane_at);
+    insert into ticket_seats values (ip_ticketID, ip_seat_number);
 end //
 delimiter ;
 
@@ -248,18 +248,22 @@ sp_main: begin
 	end if;
     -- updating flight
     update flight
-    set next_time = DATEADD(hour, 1, flight.next_time)
-    where ip_flightID = flightID;
+    set next_time = DATE_ADD(flight.next_time, interval 2 hour)
+    where ip_flightID = flight.flightID;
     -- updating pilot
     update pilot
     set experience = experience + 1
     where ((pilot.flying_airline) in (select support_airline from flight where ip_flightID = flightID))
     and ((pilot.flying_tail) in (select support_tail from flight where ip_flightID = flightID));
     -- updating passenger
+    set @distance = (
+    select distance from flight
+    join route_path on route_path.routeID = flight.routeID
+    join leg on leg.legID = route_path.legID
+    where flightID = ip_flightID and progress + 1 = sequence);
     update passenger
-    set passenger.miles = passenger.miles + 
-    (select distance from leg right join route_path on leg.legID = route_path.legID where route_path.routeID = flight.routeID and 
-    personID in (select customer from ticket where ticket.carrier = ip_flightID));
+    set passenger.miles = passenger.miles + @distance
+    where personID in (select customer from ticket where ticket.carrier = ip_flightID);
 end //
 delimiter ;
 
@@ -323,7 +327,7 @@ sp_main: begin
 	if (ip_flightID is NULL or ip_personID is NULL) 
 		then leave sp_main;
 	end if;
-    if ((select flying_airplane from pilot where ip_personID = personID) is NULL) and
+    if ((select flying_airline from pilot where ip_personID = personID) is NULL) and
     ((select flying_tail from pilot where ip_personID = personID) is NULL)
 		then leave sp_main;
 	end if;
@@ -430,7 +434,11 @@ sp_main: begin
     
     if (ip_personID not in (select personID from passenger))
     -- delete both person and pilot sections
-		then delete from person
+		then delete from pilot_licenses
+        where personID = ip_personID;
+        delete from pilot
+		where personID = ip_personID;
+        delete from person
 		where personID = ip_personID;
         leave sp_main;
 	end if;
@@ -463,7 +471,7 @@ select null, 0, null, null, null, null;
 create or replace view people_in_the_air (departing_from, arriving_at, num_airplanes,
 	airplane_list, flight_list, earliest_arrival, latest_arrival, num_pilots,
 	num_passengers, joint_pilots_passengers, person_list) as
-select null, null, null, null, null, 0, 0, null, null;
+select null, null, 0, null, null, null, null, 0, 0, null, null;
 
 -- [22] people_on_the_ground() - dongjae
 -- -----------------------------------------------------------------------------
