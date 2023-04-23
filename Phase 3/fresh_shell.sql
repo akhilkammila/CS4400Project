@@ -196,6 +196,53 @@ delimiter //
 create procedure extend_route (in ip_routeID varchar(50), in ip_legID varchar(50))
 sp_main: begin
 
+-- Few extra checks:
+-- routeID and legID are primary keys and are going to be inserted, so they cant be null
+if ip_routeID is null or ip_legID is null
+	then leave sp_main;
+end if;
+-- legID must exist, and route must already exist
+if ip_legID not in (select legID from leg) or ip_routeID not in (select routeID from route)
+	then leave sp_main;
+end if;
+
+-- Check if this leg is the same as the arrival airport of the last leg
+if
+	-- Get this leg's departure
+	(SELECT departure
+	FROM leg
+	WHERE legID = ip_legID)
+
+	!=
+
+	-- Get the previous leg's arrival
+	(SELECT arrival
+	FROM leg
+	WHERE legID in
+		-- Find id of last leg (before this one that we are adding)
+		(SELECT legID
+		FROM route_path
+		WHERE routeID = ip_routeID and sequence in
+			-- Find the sequence number of last leg in that route
+			(SELECT MAX(sequence)
+			FROM route_path as p
+			GROUP BY routeID
+			HAVING routeID = ip_routeID)))
+
+	then leave sp_main;
+end if;
+
+-- Passed checks, now we insert
+INSERT into route_path values (
+ip_routeID,
+ip_legID,
+
+-- Find the sequence number of last leg in that route
+((SELECT MAX(sequence)
+FROM route_path as p
+GROUP BY routeID
+HAVING routeID = ip_routeID)+1));
+
 end //
 delimiter ;
 
