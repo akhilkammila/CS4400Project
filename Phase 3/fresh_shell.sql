@@ -142,44 +142,6 @@ create procedure add_update_leg (in ip_legID varchar(50), in ip_distance integer
     in ip_departure char(3), in ip_arrival char(3))
 sp_main: begin
 
--- Check null
-if ip_legID is null
-	then leave sp_main;
-end if;
-
--- Check id already used (i think this is an exit, im not sure?)
-if ip_legID in (select legID from leg)
-	then leave sp_main;
-end if;
-
--- Check if leg from dept airport to arrival airport alr exists
--- If so, update
-if EXISTS
-	(SELECT legID
-	FROM leg
-	WHERE departure = ip_departure and arrival = ip_arrival)
-    
-    -- update the current leg's existance
-	then
-		UPDATE leg SET distance = ip_distance
-        WHERE legID in
-			-- get legID of leg with same dept and arrival
-			(SELECT legID
-			FROM leg
-			WHERE departure = ip_departure and arrival = ip_arrival);
--- Otherwise, add
-else
-INSERT into leg values(ip_legID, ip_distance, ip_departure, ip_arrival);
-
-
--- Check for symmetric leg in opposite direction
-UPDATE leg SET distance = ip_distance
-WHERE legID in
-	(SELECT legID
-    FROM leg
-    WHERE departure = ip_arrival and arrival = ip_departure);
-end if;
-
 end //
 delimiter ;
 

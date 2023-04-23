@@ -2,6 +2,9 @@
 -- Flight Management Course Project Mechanics (v1.0) STARTING SHELL
 -- Views, Functions & Stored Procedures
 
+-- Akhil's Queries: 7,9,15,19,21,23
+-- swapped 3 for 9 and 11 for 21 with david
+
 /* This is a standard preamble for most of our scripts.  The intent is to establish
 a consistent environment for the database behavior. */
 set global transaction isolation level serializable;
@@ -74,19 +77,6 @@ create procedure add_person (in ip_personID varchar(50), in ip_first_name varcha
     in ip_miles integer)
 sp_main: begin
 
--- Check if inputs valid
-if ip_personID is null or ip_last_name is null or ip_first_name is null
-	then leave sp_main;
-end if;
-
--- If pilot
-if ip_personID in (select personID from pilot)
-	then
-    if ip_taxID is null or ip_experience is null or ip_flying_airline is null
-		then leave sp_main;
-	end if;
-end if;
-
 end //
 delimiter ;
 
@@ -155,43 +145,43 @@ create procedure add_update_leg (in ip_legID varchar(50), in ip_distance integer
     in ip_departure char(3), in ip_arrival char(3))
 sp_main: begin
 
--- Check null
-if ip_legID is null
-	then leave sp_main;
-end if;
+-- -- Check null
+-- if ip_legID is null
+-- 	then leave sp_main;
+-- end if;
 
--- Check id already used (i think this is an exit, im not sure?)
-if ip_legID in (select leg_id from leg)
-	then leave sp_main;
-end if;
+-- -- Check id already used (i think this is an exit, im not sure?)
+-- if ip_legID in (select leg_id from leg)
+-- 	then leave sp_main;
+-- end if;
 
--- Check if leg from dept airport to arrival airport alr exists
--- If so, update
-if EXISTS
-	(SELECT legID
-	FROM leg
-	WHERE departure = ip_departure and arrival = ip_arrival)
-    
-    -- update the current leg's existance
-	then
-		UPDATE leg SET distance = ip_distance
-        WHERE legID in
-			-- get legID of leg with same dept and arrival
-			(SELECT legID
-			FROM leg
-			WHERE departure = ip_departure and arrival = ip_arrival);
--- Otherwise, add
-else
-INSERT into leg values(ip_legID, ip_distance, ip_departure, ip_arrival);
+-- -- Check if leg from dept airport to arrival airport alr exists
+-- -- If so, update
+-- if EXISTS
+-- 	(SELECT legID
+-- 	FROM leg
+-- 	WHERE departure = ip_departure and arrival = ip_arrival)
+--     
+--     -- update the current leg's existance
+-- 	then
+-- 		UPDATE leg SET distance = ip_distance
+--         WHERE legID in
+-- 			-- get legID of leg with same dept and arrival
+-- 			(SELECT legID
+-- 			FROM leg
+-- 			WHERE departure = ip_departure and arrival = ip_arrival);
+-- -- Otherwise, add
+-- else
+-- INSERT into leg values(ip_legID, ip_distance, ip_departure, ip_arrival);
 
 
--- Check for symmetric leg in opposite direction
-UPDATE leg SET distance = ip_distance
-WHERE legID in
-	(SELECT legID
-    FROM leg
-    WHERE departure = ip_arrival and arrival = ip_departure);
-end if;
+-- -- Check for symmetric leg in opposite direction
+-- UPDATE leg SET distance = ip_distance
+-- WHERE legID in
+-- 	(SELECT legID
+--     FROM leg
+--     WHERE departure = ip_arrival and arrival = ip_departure);
+-- end if;
 
 
 end //
@@ -224,53 +214,53 @@ create procedure extend_route (in ip_routeID varchar(50), in ip_legID varchar(50
 sp_main: begin
 
 
--- Check for valid value
-if ip_routeID or ip_legID is null
-	then leave sp_main;
-end if;
+-- -- Check for valid value
+-- if ip_routeID or ip_legID is null
+-- 	then leave sp_main;
+-- end if;
 
--- Leg must exist and route must exist
-if ip_legID not in (select legID from leg) or ip_routeID not in (select routeID from route)
-	then leave sp_main;
-end if;
+-- -- Leg must exist and route must exist
+-- if ip_legID not in (select legID from leg) or ip_routeID not in (select routeID from route)
+-- 	then leave sp_main;
+-- end if;
 
--- Check if this leg is the same as the arrival airport of the last leg
-if
-	-- Get this leg's departure
-	(SELECT departure
-	FROM leg
-	WHERE legID = ip_legID)
+-- -- Check if this leg is the same as the arrival airport of the last leg
+-- if
+-- 	-- Get this leg's departure
+-- 	(SELECT departure
+-- 	FROM leg
+-- 	WHERE legID = ip_legID)
 
-	!=
+-- 	!=
 
-	-- Get the previous leg's arrival
-	(SELECT arrival
-	FROM leg
-	WHERE legID in
-		-- Find id of last leg (before this one that we are adding)
-		(SELECT legID
-		FROM route_path
-		WHERE route_id = ip_route_id and sequence in
-			-- Find the sequence number of last leg in that route
-			(SELECT MAX(sequence)
-			FROM route_path as p
-			GROUP BY routeID
-			HAVING routeID = ip_routeID)))
+-- 	-- Get the previous leg's arrival
+-- 	(SELECT arrival
+-- 	FROM leg
+-- 	WHERE legID in
+-- 		-- Find id of last leg (before this one that we are adding)
+-- 		(SELECT legID
+-- 		FROM route_path
+-- 		WHERE route_id = ip_route_id and sequence in
+-- 			-- Find the sequence number of last leg in that route
+-- 			(SELECT MAX(sequence)
+-- 			FROM route_path as p
+-- 			GROUP BY routeID
+-- 			HAVING routeID = ip_routeID)))
 
-	then leave sp_main;
-end if;
+-- 	then leave sp_main;
+-- end if;
 
--- Passed checks, now we insert
-INSERT into route_path values (
-ip_routeID,
-ip_legID,
+-- -- Passed checks, now we insert
+-- INSERT into route_path values (
+-- ip_routeID,
+-- ip_legID,
 
--- Find the sequence number of last leg in that route
-((SELECT MAX(sequence)
-FROM route_path as p
-GROUP BY routeID
-HAVING routeID = ip_routeID)+1)
-);
+-- -- Find the sequence number of last leg in that route
+-- ((SELECT MAX(sequence)
+-- FROM route_path as p
+-- GROUP BY routeID
+-- HAVING routeID = ip_routeID)+1)
+-- );
 
 end //
 delimiter ;
@@ -423,27 +413,28 @@ delimiter ;
 -- -----------------------------------------------------------------------------
 create or replace view flights_in_the_air (departing_from, arriving_at, num_flights,
 	flight_list, earliest_arrival, latest_arrival, airplane_list) as
+select null, null, 0, null, null, null, null;
 
 -- 19
-select departure as departing_from,
-arrival as arriving_at,
-COUNT(*) as num_flights,
-GROUP_CONCAT(flightID SEPARATOR ',') as flight_list,
-MIN(next_time) as earliest_arrival,
-MAX(next_time) as latest_arrival,
-GROUP_CONCAT(locationID SEPARATOR ',') as airplane_list
-from
-	-- get flights in the air
-	(select *
-	from flight
-	where airplane_status = 'in_flight') as f
-join route_path as p
-on f.routeID = p.routeID and f.progress = p.sequence
-join leg as l
-on p.legID = l.legID
-join airplane as a
-on f.support_airline = a.airlineID and f.support_tail = a.tail_num
-GROUP BY departure, arrival;
+-- select departure as departing_from,
+-- arrival as arriving_at,
+-- COUNT(*) as num_flights,
+-- GROUP_CONCAT(flightID SEPARATOR ',') as flight_list,
+-- MIN(next_time) as earliest_arrival,
+-- MAX(next_time) as latest_arrival,
+-- GROUP_CONCAT(locationID SEPARATOR ',') as airplane_list
+-- from
+-- 	-- get flights in the air
+-- 	(select *
+-- 	from flight
+-- 	where airplane_status = 'in_flight') as f
+-- join route_path as p
+-- on f.routeID = p.routeID and f.progress = p.sequence
+-- join leg as l
+-- on p.legID = l.legID
+-- join airplane as a
+-- on f.support_airline = a.airlineID and f.support_tail = a.tail_num
+-- GROUP BY departure, arrival;
 
 -- [20] flights_on_the_ground()
 -- -----------------------------------------------------------------------------
@@ -477,6 +468,22 @@ select null, null, null, null, null, 0, 0, null, null;
 create or replace view route_summary (route, num_legs, leg_sequence, route_length,
 	num_flights, flight_list, airport_sequence) as
 select null, 0, null, 0, 0, null, null;
+
+-- select r.routeID,
+-- COUNT(DISTINCT l.legID),
+-- GROUP_CONCAT(DISTINCT l.legID  ORDER BY sequence),
+-- SUM(l.distance),
+-- COUNT(DISTINCT f.flightID),
+-- GROUP_CONCAT(DISTINCT f.flightID order by sequence),
+-- GROUP_CONCAT(l.arrival order by sequence)
+-- from route as r
+-- join route_path as p
+-- on r.routeID = p.routeID
+-- join leg as l
+-- on l.legID = p.legID
+-- left join flight as f
+-- on f.routeID = r.routeID
+-- group by routeID;
 
 -- [24] alternative_airports()
 -- -----------------------------------------------------------------------------
