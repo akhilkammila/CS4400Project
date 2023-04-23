@@ -164,15 +164,19 @@ create procedure purchase_ticket_and_seat (in ip_ticketID varchar(50), in ip_cos
 	in ip_carrier varchar(50), in ip_customer varchar(50), in ip_deplane_at char(3),
     in ip_seat_number varchar(50))
 sp_main: begin
+	--  check if ticket or seat number is not null
 	if ip_ticketID is NULL or ip_seat_number is NULL
 		then leave sp_main;
 	end if;
+    -- checking if ticket already exists
     if ip_ticketID in (select ticketID from ticket)
 		then leave sp_main;
 	end if;
+    -- check if customer not in database
     if ip_customer not in (select personID from person)
 		then leave sp_main;
 	end if;
+    -- check to see if carrier is in flight
     if ip_carrier not in (select flightID from flight)
 		then leave sp_main;
 	end if;
@@ -180,6 +184,7 @@ sp_main: begin
     if ip_deplane_at is NULL
 		then leave sp_main;
 	end if;
+    -- check to see if seat is unoccupied
     if ip_seat_number in (select seat_number from ticket_seats)
 		then leave sp_main;
 	end if;
