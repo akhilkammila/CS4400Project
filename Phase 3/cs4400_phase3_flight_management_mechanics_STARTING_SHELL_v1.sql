@@ -78,7 +78,20 @@ delimiter //
 create procedure add_airport (in ip_airportID char(3), in ip_airport_name varchar(200),
     in ip_city varchar(100), in ip_state char(2), in ip_locationID varchar(50))
 sp_main: begin
-
+-- check if primary key is null
+	if ip_airportID is null
+		then leave sp_main;
+	end if;
+-- check to see if airportID works
+	if ip_airportID in (select airportID from airport)
+		then leave sp_main;
+	end if;
+-- check if city or state is null
+	if ip_state is NULL or ip_city is NUll
+		then leave sp_main;
+	end if;
+-- possible checks to see if name is longer than 
+    insert into airport values(ip_airportID, ip_airport_name, ip_city, ip_state, ip_locationID);
 end //
 delimiter ;
 
@@ -149,7 +162,7 @@ sp_main: begin
 end //
 delimiter ;
 
--- [6] purchase_ticket_and_seat()
+-- [6] purchase_ticket_and_seat() - Dongjae
 -- -----------------------------------------------------------------------------
 /* This stored procedure creates a new ticket.  The cost of the flight is optional
 since it might have been a gift, purchased with frequent flyer miles, etc.  Each
@@ -165,7 +178,24 @@ create procedure purchase_ticket_and_seat (in ip_ticketID varchar(50), in ip_cos
 	in ip_carrier varchar(50), in ip_customer varchar(50), in ip_deplane_at char(3),
     in ip_seat_number varchar(50))
 sp_main: begin
-
+	if ticketId is NULL or seatID is NULL
+		then leave sp_main;
+	end if;
+    if ip_customer not in (select personID from person)
+		then leave sp_main;
+	end if;
+    if ip_carrier not in (select flightID from flight)
+		then leave sp_main;
+	end if;
+    -- check to see if deplane before final or final airport on route 
+    if ip_deplane_at is NULL
+		then leave sp_main;
+	end if;
+    if ip_seat_number in (select seat_number from ticket_seats)
+		then leave sp_main;
+	end if;
+    insert into ticket values (id_ticketID, ip_cost, ip_carrier, ip_customer, ip_deplane_at);
+    insert into ticket_seats values (id_ticketID, ip_seat_number);
 end //
 delimiter ;
 
@@ -304,7 +334,7 @@ HAVING routeID = ip_routeID)+1)
 end //
 delimiter ;
 
--- [10] flight_landing()
+-- [10] flight_landing() - Dongjae
 -- -----------------------------------------------------------------------------
 /* This stored procedure updates the state for a flight landing at the next airport
 along it's route.  The time for the flight should be moved one hour into the future
@@ -316,7 +346,23 @@ drop procedure if exists flight_landing;
 delimiter //
 create procedure flight_landing (in ip_flightID varchar(50))
 sp_main: begin
-
+	if ip_flightID is NULL
+		then leave sp_main;
+	end if;
+    -- updating flight
+    update flight
+    set next_time = DATEADD(hour, 1, flight.next_time)
+    where ip_flightID = flightID;
+    -- updating pilot
+    update pilot
+    set experience = experience + 1
+    where ((pilot.flying_airline) in (select support_airline from flight where ip_flightID = flightID))
+    and ((pilot.flying_tail) in (select support_tail from flight where ip_flightID = flightID));
+    -- updating passenger
+    update passenger
+    set passenger.miles = passenger.miles + 
+    (select distance from leg right join route_path on leg.legID = route_path.legID where route_path.routeID = flight.routeID and 
+    personID in (select customer from ticket where ticket.carrier = ip_flightID));
 end //
 delimiter ;
 
@@ -365,7 +411,7 @@ sp_main: begin
 end //
 delimiter ;
 
--- [14] assign_pilot()
+-- [14] assign_pilot() - dongjae
 -- -----------------------------------------------------------------------------
 /* This stored procedure assigns a pilot as part of the flight crew for a given
 airplane.  The pilot being assigned must have a license for that type of airplane,
@@ -377,7 +423,29 @@ drop procedure if exists assign_pilot;
 delimiter //
 create procedure assign_pilot (in ip_flightID varchar(50), ip_personID varchar(50))
 sp_main: begin
-
+	if (ip_flightID is NULL or ip_personID is NULL) 
+		then leave sp_main;
+	end if;
+    if ((select flying_airplane from pilot where ip_personID = personID) is NULL) and
+    ((select flying_tail from pilot where ip_personID = personID) is NULL)
+		then leave sp_main;
+	end if;
+	if ((select plane_type from airplane join flight 
+    on (airplane.airlineID = flight.support_airline and airplane.tail_num = flight.support_tail)
+    where ip_flightID = flight.flightID) not in (select license from pilot_licenses where personID = ip_personID))
+		then leave sp_main;
+	end if;
+    update person
+    set locationID = (select airplane.locationID from airplane join flight 
+    on (airplane.airlineID = flight.support_airline and airplane.tail_num = flight.support_tail));
+    
+    update pilot
+    set flying_airline = (select support_airline from flight where ip_flightID = flight.flightID);
+	
+    update pilot
+    set flying_tail = (select support_tail from flight where ip_flightID = flight.flightID);
+    
+    
 end //
 delimiter ;
 
@@ -425,7 +493,7 @@ sp_main: begin
 end //
 delimiter ;
 
--- [18] remove_pilot_role()
+-- [18] remove_pilot_role() - dongjae
 -- -----------------------------------------------------------------------------
 /* This stored procedure removes the pilot role from person.  The pilot must not
 be assigned to a flight; or, if they are assigned to a flight, then that flight
@@ -438,7 +506,25 @@ drop procedure if exists remove_pilot_role;
 delimiter //
 create procedure remove_pilot_role (in ip_personID varchar(50))
 sp_main: begin
-
+	if ip_personID is NULL 
+		then leave sp_main;
+	end if;
+    if ip_personID not in (select personId from pilot)
+		then leave sp_main;
+	end if;
+    
+    create TEMPORARY TABLE temp as
+    select routeID
+    from pilot
+    join flight on pilot.flying_airline = flight.support_airline and pilot.flying_tail = flight.support_tail
+    where personID = ip_personID;
+    
+    if ((select flying_airline from pilot where ip_personID = personId) is not NULL and 
+    (select flying_tail from pilot where ip_personID = personId) is not NULL) and 
+    (select flight.routeID from airplane join flight 
+    on (airplane.airlineID = flight.support_airline and airplane.tail_num = flight.support_tail)) 
+		
+		
 end //
 delimiter ;
 
@@ -467,7 +553,7 @@ create or replace view people_in_the_air (departing_from, arriving_at, num_airpl
 	num_passengers, joint_pilots_passengers, person_list) as
 select null, null, 0, null, null, null, null, 0, 0, null, null;
 
--- [22] people_on_the_ground()
+-- [22] people_on_the_ground() - dongjae
 -- -----------------------------------------------------------------------------
 /* This view describes where people who are currently on the ground are located. */
 -- -----------------------------------------------------------------------------
