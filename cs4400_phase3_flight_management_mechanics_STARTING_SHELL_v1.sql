@@ -48,7 +48,7 @@ sp_main: begin
     then leave sp_main;
     end if;
 	-- Check if the airplane's tail number is unique for the given airline.
-	if exists (select * from airplanes where airlineID = ip_airlineID and tail_num = ip_tail_num) 
+	if exists (select * from airplane where airlineID = ip_airlineID and tail_num = ip_tail_num) 
     then leave sp_main;
 	end if;
 
@@ -61,7 +61,7 @@ sp_main: begin
 	end if;
 
 	-- Insert the new airplane into the database.
-	insert into airplanes values (ip_airlineID, ip_tail_num, ip_seat_capacity, ip_speed, ip_locationID, ip_plane_type, ip_skids, ip_propellers, ip_jet_engines);
+	insert into airplane values (ip_airlineID, ip_tail_num, ip_seat_capacity, ip_speed, ip_locationID, ip_plane_type, ip_skids, ip_propellers, ip_jet_engines);
 end //
 delimiter ;
 
@@ -100,7 +100,31 @@ create procedure add_person (in ip_personID varchar(50), in ip_first_name varcha
     in ip_experience integer, in ip_flying_airline varchar(50), in ip_flying_tail varchar(50),
     in ip_miles integer)
 sp_main: begin
-
+	if (ip_personID is null or ip_locationID is null)
+    then leave sp_main;
+    end if;
+    if ip_personID in (select personID from person)
+    then leave sp_main;
+    end if;
+    if (ip_locationID not in (select * from location))
+    then leave sp_main;
+    end if;
+    insert into person values(ip_personID, ip_first_name, ip_last_name, ip_locationID);
+    if (ip_taxID is not null)
+    then
+		if(ip_experience is null)
+        then
+        leave sp_main;
+        end if;
+		if (ip_flying_airline is null xor ip_flying_tail is null)
+		then leave sp_main;
+		end if;
+		insert into pilot values(ip_personID, ip_taxID, ip_experience, ip_flying_airline, ip_flying_tail);
+	end if;
+    if (ip_miles is not null)
+    then
+		insert into passenger values (ip_personID, ip_miles);
+    end if;
 end //
 delimiter ;
 
@@ -131,7 +155,25 @@ create procedure offer_flight (in ip_flightID varchar(50), in ip_routeID varchar
     in ip_support_airline varchar(50), in ip_support_tail varchar(50), in ip_progress integer,
     in ip_airplane_status varchar(100), in ip_next_time time)
 sp_main: begin
-	
+	if (ip_flightID is null or ip_routeID is null)
+    then leave sp_main;
+    end if;
+    if (ip_routeID not in (select * from route))
+    then leave sp_main;
+    end if;
+    if (ip_support_airline is null xor ip_support_tail is null)
+    then leave sp_main;
+    end if;
+    if (ip_support_airline is not null and ip_support_tail is not null)
+    then
+		if (ip_progress is null or ip_airplane_status is null or ip_next_time is null)
+        then leave sp_main;
+        end if;
+        if exists (select * from flight where ip_support_airline = support_airline and ip_support_tail = support_tail)
+        then leave sp_main;
+        end if;
+	end if;
+    insert into flight values (ip_flightID, ip_routeID, ip_support_airline, ip_support_tail, ip_progress, ip_airplane_status, ip_next_time);
 end //
 delimiter ;
 
@@ -230,7 +272,17 @@ drop procedure if exists flight_takeoff;
 delimiter //
 create procedure flight_takeoff (in ip_flightID varchar(50))
 sp_main: begin
-
+	if not exists (select * from flight where flightID = ip_flightID)
+    then leave sp_main;
+    end if;
+    if not exists (select * from (select flightID from (select airlineID, tail_num, plane_type, count(*) from airplane inner join pilot on airlineID = flying_airline and tail_num = flying_tail group by airlineID, tail_num having (plane_type = 'jet' and count(*) >= 2) or (plane_type = 'prop' and count(*) >= 1)) as temp inner join flight on support_airline = airlineID and support_tail = tail_num) as temp2 where flightID = ip_flightID)
+	then
+		update flight set next_time = addtime(next_time,  CONCAT('00:', 30, ':00')) where flightID = ip_flightID;
+        leave sp_main;
+	end if;
+	set @distance = (select distance from (select flightID, flight.routeID, legID, progress from flight inner join route_path on flight.routeID = route_path.routeID and progress = sequence) as temp inner join leg on temp.legID = leg.legID where flightID = 'AM_1523'); 
+	set @speed = (select speed from flight, airplane where flightID = 'AM_1523' and airlineID = support_airline and tail_num = support_tail);
+	update flight set next_time = addtime(next_time,  CONCAT(CAST(@distance/@speed AS SIGNED), ':00', ':00')) where flightID = ip_flightID;
 end //
 delimiter ;
 
@@ -258,7 +310,7 @@ drop procedure if exists passengers_disembark;
 delimiter //
 create procedure passengers_disembark (in ip_flightID varchar(50))
 sp_main: begin
-
+	
 end //
 delimiter ;
 
@@ -301,7 +353,22 @@ drop procedure if exists retire_flight;
 delimiter //
 create procedure retire_flight (in ip_flightID varchar(50))
 sp_main: begin
-
+	if (ip_flightID not in (select flightID from flight))
+    then leave sp_main;
+    end if;
+    if ((select airplane_status from flight where flightID = ip_flightID) = 'on_ground')
+    then
+		if ((select progress from flight where flightID = ip_flightID) = 0)
+        then delete from flight where flightID = ip_flightID;
+        end if;
+        if
+        (select progress from flight where flightID = ip_flightID) = 
+        (select max(sequence) from route_path where routeID =
+			(select routeID from flight where flightID = ip_flightID)
+            group by routeID)
+		then delete from flight where flightID = ip_flightID;
+		end if;
+	end if;
 end //
 delimiter ;
 
@@ -318,7 +385,23 @@ drop procedure if exists remove_passenger_role;
 delimiter //
 create procedure remove_passenger_role (in ip_personID varchar(50))
 sp_main: begin
-
+	if not (select flightID from 
+	(select personID, airlineID, tail_num from person inner join airplane on person.locationID = airplane.locationID) as temp 
+	inner join flight on airlineID = support_airline and tail_num = support_tail where personID = ip_personID) = 'on_ground'
+    then leave sp_main;
+    end if;
+	delete from passenger where personID = ip_personID;
+    if not exists (select * from pilot where personID = ip_personID)
+    then
+		delete from person where personID = ip_personID;
+	end if;
+	if exists (select * from pilot where personID = ip_personID)
+    then 
+		call passengers_disembark (
+		(select flightID from 
+		(select personID, airlineID, tail_num from person inner join airplane on person.locationID = airplane.locationID) as temp 
+		inner join flight on airlineID = support_airline and tail_num = support_tail where personID = ip_personID));
+	end if;
 end //
 delimiter ;
 
@@ -362,8 +445,7 @@ select null, 0, null, null, null, null;
 create or replace view people_in_the_air (departing_from, arriving_at, num_airplanes,
 	airplane_list, flight_list, earliest_arrival, latest_arrival, num_pilots,
 	num_passengers, joint_pilots_passengers, person_list) as
-select null, null, 0, null, null, null, null, 0, 0, null, null;
-
+select null,null,0,null,null,null,null,0,0,0,null;
 -- [22] people_on_the_ground()
 -- -----------------------------------------------------------------------------
 /* This view describes where people who are currently on the ground are located. */
@@ -412,6 +494,18 @@ drop procedure if exists simulation_cycle;
 delimiter //
 create procedure simulation_cycle ()
 sp_main: begin
-
+	set @fl = (select flightID, airplane_status from flight where next_time = (select min(next_time) from flight) order by airplane_status, flightID limit 1);
+    set @stat = (select airplane_status from flight where flightID = @f1);
+    if  (@stat = 'in_flight')
+    then 
+		call flight_landing(@f1);
+        call passengers_disembark(@f1);
+        call recycle_crew(@f1);
+        call retire_flight(@f1);
+	else
+		call passengers_board(@f1);
+        call flight_takeoff(@f1);
+    end if;
+    
 end //
 delimiter ;
