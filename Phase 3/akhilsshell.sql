@@ -354,8 +354,6 @@ delimiter //
 create procedure recycle_crew (in ip_flightID varchar(50))
 sp_main: begin
 
-
-
 end //
 delimiter ;
 

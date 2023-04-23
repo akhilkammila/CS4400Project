@@ -3,6 +3,8 @@
 -- Views, Functions & Stored Procedures
 
 -- Akhil's Queries: 7,9,15,19,21,23
+-- done so far: 7,9,19,23
+-- need to do: 15, 21
 -- swapped 3 for 9 and 11 for 21 with david
 
 /* This is a standard preamble for most of our scripts.  The intent is to establish
@@ -335,6 +337,49 @@ drop procedure if exists recycle_crew;
 delimiter //
 create procedure recycle_crew (in ip_flightID varchar(50))
 sp_main: begin
+
+declare ending_plane_locationID varchar(50);
+
+-- check if flight has ended
+if (SELECT progress FROM flight WHERE flightID = ip_flightID) != 3
+	then
+    leave sp_main;
+end if;
+
+-- check if all passengers have disembarked
+-- for this we have to join flight with airplane, and get the plane's locationID
+-- then check if any people are on that airplane (if they are at that locationID)
+select locationID
+from flight as f
+join airplane as a
+on f.support_airline = a.airlineID and f.support_tail = a.tail_num
+where f.flightID = ip_flightID
+into ending_plane_locationID;
+
+if exists (select * from person as p where p.locationID = ending_plane_locationID)
+	then leave sp_main;
+end if;
+
+
+-- Get the pilots to release and put them in a table
+DROP TABLE if EXISTS pilotsToRelease;
+CREATE TABLE pilotsToRelease(
+	pilot_id varchar(50) PRIMARY KEY
+);
+
+INSERT INTO pilotsToRelease(pilot_id)
+SELECT personID
+FROM flight as f
+JOIN pilot as p
+ON f.support_airline = p.flying_airline and f.supporT_tail = p.flying_tail
+WHERE f.flightID = ip_flightID;
+
+-- Update the pilots, clear their flying airline and tail
+UPDATE pilot
+SET flying_airline = NULL, flying_tail = NULL
+WHERE personID in (SELECT * FROM pilotsToRelease);
+
+DROP TABLE if EXISTS pilotsToRelease;
 
 end //
 delimiter ;
