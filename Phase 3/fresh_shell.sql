@@ -2,6 +2,9 @@
 -- Flight Management Course Project Mechanics (v1.0) STARTING SHELL
 -- Views, Functions & Stored Procedures
 
+-- Akhil's Queries: 7,9,15,19,21,23
+-- swapped 3 for 9 and 11 for 21 with david
+
 /* This is a standard preamble for most of our scripts.  The intent is to establish
 a consistent environment for the database behavior. */
 set global transaction isolation level serializable;
@@ -390,7 +393,25 @@ delimiter ;
 -- -----------------------------------------------------------------------------
 create or replace view flights_in_the_air (departing_from, arriving_at, num_flights,
 	flight_list, earliest_arrival, latest_arrival, airplane_list) as
-select null, null, 0, null, null, null, null;
+select departure as departing_from,
+arrival as arriving_at,
+COUNT(*) as num_flights,
+GROUP_CONCAT(flightID SEPARATOR ',') as flight_list,
+MIN(next_time) as earliest_arrival,
+MAX(next_time) as latest_arrival,
+GROUP_CONCAT(locationID SEPARATOR ',') as airplane_list
+from
+	-- get flights in the air
+	(select *
+	from flight
+	where airplane_status = 'in_flight') as f
+join route_path as p
+on f.routeID = p.routeID and f.progress = p.sequence
+join leg as l
+on p.legID = l.legID
+join airplane as a
+on f.support_airline = a.airlineID and f.support_tail = a.tail_num
+GROUP BY departure, arrival;
 
 -- [20] flights_on_the_ground()
 -- -----------------------------------------------------------------------------
