@@ -35,34 +35,6 @@ create procedure add_airplane (in ip_airlineID varchar(50), in ip_tail_num varch
     in ip_jet_engines integer)
 sp_main: begin
 
-	-- Check if the inputs are valid.
-	if (ip_airlineID is null or ip_tail_num is null or ip_seat_capacity is null or
-		ip_speed is null) 
-        then leave sp_main;
-	end if;
-
-	if (ip_seat_capacity <= 0 or ip_speed <= 0) 
-    then leave sp_main;
-	end if;
-
-	if (ip_airlineID not in (select airlineID from airline))
-    then leave sp_main;
-    end if;
-	-- Check if the airplane's tail number is unique for the given airline.
-	if exists (select * from airplanes where airlineID = ip_airlineID and tail_num = ip_tail_num) 
-    then leave sp_main;
-	end if;
-
-	-- Check if the airplane's location is unique across the entire database.
-	if (ip_locationID is not null)
-    then
-    if (ip_locationID not in (select * from location))
-    then leave sp_main;
-    end if;
-	end if;
-
-	-- Insert the new airplane into the database.
-	insert into airplanes values (ip_airlineID, ip_tail_num, ip_seat_capacity, ip_speed, ip_locationID, ip_plane_type, ip_skids, ip_propellers, ip_jet_engines);
 end //
 delimiter ;
 
@@ -102,19 +74,6 @@ create procedure add_person (in ip_personID varchar(50), in ip_first_name varcha
     in ip_miles integer)
 sp_main: begin
 
--- Check if inputs valid
-if ip_personID is null or ip_last_name is null or ip_first_name is null
-	then leave sp_main;
-end if;
-
--- If pilot
-if ip_personID in (select personID from pilot)
-	then
-    if ip_taxID is null or ip_experience is null or ip_flying_airline is null
-		then leave sp_main;
-	end if;
-end if;
-
 end //
 delimiter ;
 
@@ -145,7 +104,7 @@ create procedure offer_flight (in ip_flightID varchar(50), in ip_routeID varchar
     in ip_support_airline varchar(50), in ip_support_tail varchar(50), in ip_progress integer,
     in ip_airplane_status varchar(100), in ip_next_time time)
 sp_main: begin
-	
+
 end //
 delimiter ;
 
@@ -183,46 +142,6 @@ create procedure add_update_leg (in ip_legID varchar(50), in ip_distance integer
     in ip_departure char(3), in ip_arrival char(3))
 sp_main: begin
 
--- Check null
-if ip_legID is null
-	then leave sp_main;
-end if;
-
--- Check id already used (i think this is an exit, im not sure?)
-if ip_legID in (select leg_id from leg)
-	then leave sp_main;
-end if;
-
--- Check if leg from dept airport to arrival airport alr exists
--- If so, update
-if EXISTS
-	(SELECT legID
-	FROM leg
-	WHERE departure = ip_departure and arrival = ip_arrival)
-    
-    -- update the current leg's existance
-	then
-		UPDATE leg SET distance = ip_distance
-        WHERE legID in
-			-- get legID of leg with same dept and arrival
-			(SELECT legID
-			FROM leg
-			WHERE departure = ip_departure and arrival = ip_arrival);
--- Otherwise, add
-else
-INSERT into leg values(ip_legID, ip_distance, ip_departure, ip_arrival);
-
-
--- Check for symmetric leg in opposite direction
-UPDATE leg SET distance = ip_distance
-WHERE legID in
-	(SELECT legID
-    FROM leg
-    WHERE departure = ip_arrival and arrival = ip_departure);
-
-end if;
-
-
 end //
 delimiter ;
 
@@ -251,55 +170,6 @@ drop procedure if exists extend_route;
 delimiter //
 create procedure extend_route (in ip_routeID varchar(50), in ip_legID varchar(50))
 sp_main: begin
-
-
--- Check for valid value
-if ip_routeID or ip_legID is null
-	then leave sp_main;
-end if;
-
--- Leg must exist and route must exist
-if ip_legID not in (select legID from leg) or ip_routeID not in (select routeID from route)
-	then leave sp_main;
-end if;
-
--- Check if this leg is the same as the arrival airport of the last leg
-if
-	-- Get this leg's departure
-	(SELECT departure
-	FROM leg
-	WHERE legID = ip_legID)
-
-	!=
-
-	-- Get the previous leg's arrival
-	(SELECT arrival
-	FROM leg
-	WHERE legID in
-		-- Find id of last leg (before this one that we are adding)
-		(SELECT legID
-		FROM route_path
-		WHERE route_id = ip_route_id and sequence in
-			-- Find the sequence number of last leg in that route
-			(SELECT MAX(sequence)
-			FROM route_path as p
-			GROUP BY routeID
-			HAVING routeID = ip_routeID)))
-
-	then leave sp_main;
-end if;
-
--- Passed checks, now we insert
-INSERT into route_path values (
-ip_routeID,
-ip_legID,
-
--- Find the sequence number of last leg in that route
-((SELECT MAX(sequence)
-FROM route_path as p
-GROUP BY routeID
-HAVING routeID = ip_routeID)+1)
-);
 
 end //
 delimiter ;
