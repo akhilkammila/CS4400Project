@@ -469,22 +469,6 @@ create or replace view route_summary (route, num_legs, leg_sequence, route_lengt
 	num_flights, flight_list, airport_sequence) as
 select null, 0, null, 0, 0, null, null;
 
--- select r.routeID,
--- COUNT(DISTINCT l.legID),
--- GROUP_CONCAT(DISTINCT l.legID  ORDER BY sequence),
--- SUM(l.distance),
--- COUNT(DISTINCT f.flightID),
--- GROUP_CONCAT(DISTINCT f.flightID order by sequence),
--- GROUP_CONCAT(l.arrival order by sequence)
--- from route as r
--- join route_path as p
--- on r.routeID = p.routeID
--- join leg as l
--- on l.legID = p.legID
--- left join flight as f
--- on f.routeID = r.routeID
--- group by routeID;
-
 -- [24] alternative_airports()
 -- -----------------------------------------------------------------------------
 /* This view displays airports that share the same city and state. */
