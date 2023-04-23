@@ -513,17 +513,32 @@ sp_main: begin
 		then leave sp_main;
 	end if;
     
-    create TEMPORARY TABLE temp as
-    select routeID
+    
+    set @progress = (select progress
     from pilot
     join flight on pilot.flying_airline = flight.support_airline and pilot.flying_tail = flight.support_tail
-    where personID = ip_personID;
+    where pilot.personID = ip_personID);
+    
+    set @num_legs = (select count(*)
+    from pilot
+    join flight on pilot.flying_airline = flight.support_airline and pilot.flying_tail = flight.support_tail
+    join route_path on flight.routeID = route_path.routeID
+    where personID = ip_personID
+    group by personID);
     
     if ((select flying_airline from pilot where ip_personID = personId) is not NULL and 
-    (select flying_tail from pilot where ip_personID = personId) is not NULL) and 
-    (select flight.routeID from airplane join flight 
-    on (airplane.airlineID = flight.support_airline and airplane.tail_num = flight.support_tail)) 
-		
+    (select flying_tail from pilot where ip_personID = personId) is not NULL) and  (@progress > 0 and @progress < @num_legs)
+		then leave sp_main;
+	end if;
+    
+    if (ip_personID not in (select personID from passenger))
+    -- delete both person and pilot sections
+		then delete from person
+		where personID = ip_personID;
+        leave sp_main;
+	end if;
+	delete from pilot
+	where personID = ip_personID;
 		
 end //
 delimiter ;
@@ -551,7 +566,7 @@ select null, 0, null, null, null, null;
 create or replace view people_in_the_air (departing_from, arriving_at, num_airplanes,
 	airplane_list, flight_list, earliest_arrival, latest_arrival, num_pilots,
 	num_passengers, joint_pilots_passengers, person_list) as
-select null, null, 0, null, null, null, null, 0, 0, null, null;
+select null, null, null, null, null, 0, 0, null, null;
 
 -- [22] people_on_the_ground() - dongjae
 -- -----------------------------------------------------------------------------
@@ -559,7 +574,12 @@ select null, null, 0, null, null, null, null, 0, 0, null, null;
 -- -----------------------------------------------------------------------------
 create or replace view people_on_the_ground (departing_from, airport, airport_name,
 	city, state, num_pilots, num_passengers, joint_pilots_passengers, person_list) as
-select null, null, null, null, null, 0, 0, null, null;
+
+    select airportID, person.locationID, airport_name, city, state, count(taxID), count(miles),  count(*), GROUP_CONCAT(person.personID separator ',') as joint_passengers_pilots from person
+    join airport on person.locationID = airport.locationID
+    left join pilot on pilot.personID = person.personID
+    left join passenger on passenger.personID = person.personID
+	group by airportID;
 
 -- [23] route_summary()
 -- -----------------------------------------------------------------------------
