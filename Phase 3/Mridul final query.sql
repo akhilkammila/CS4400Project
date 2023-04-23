@@ -318,6 +318,89 @@ delimiter ;
 at its current airport.  The passengers must be on that flight, and the flight must
 be located at the destination airport as referenced by the ticket. */
 -- -----------------------------------------------------------------------------
+-- drop procedure if exists passengers_disembark;
+-- delimiter //
+-- create procedure passengers_disembark (in ip_flightID varchar(50))
+-- sp_main: begin
+
+-- declare var_routeID varchar(50);
+-- declare var_flight_airline varchar(50);
+-- declare var_flight_tail varchar(50);
+-- declare var_flight_progress integer;
+
+-- if (ip_flightID is null)
+-- then leave sp_main;
+-- end if;
+
+-- if (ip_flightID not in (select flightID from flight))
+-- then leave sp_main;
+-- end if;
+
+-- if ((select airplane_status from flight where flightID = ip_flightID) != 'on_ground')
+-- then leave sp_main;
+-- end if;
+
+-- #checking if support_airline and support_tail are not null
+-- if (select support_airline from flight where flightID = ip_flightID) is null
+-- then leave sp_main;
+-- end if;
+
+-- if (select support_tail from flight where flightID = ip_flightID) is null
+-- then leave sp_main;
+-- end if;
+
+-- select routeID, support_airline, support_tail, progress into var_routeID, var_flight_airline, var_flight_tail, var_flight_progress from flight where flightID = ip_flightID;
+
+-- #checking if airport location is null
+-- if (select locationID from airport where
+-- airportID = (
+-- 	select arrival from leg
+-- 		where legID = (
+-- 			select legID from route_path
+-- 				where routeID = var_routeID  and sequence = var_flight_progress))) is null
+-- then leave sp_main;
+-- end if;
+
+-- #checking if airplane location is null
+-- if (select locationID from airplane where
+-- airlineID = var_flight_airline and
+-- tail_num = var_flight_tail) is null
+-- then leave sp_main;
+-- end if;
+
+-- if (ip_flightID not in (select carrier from ticket))
+-- then leave sp_main;
+-- end if;
+
+-- update person
+-- 	set locationID = (
+--     #getting the airport location
+-- 		select locationID from airport where
+-- 			airportID = (
+-- 				select arrival from leg
+-- 					where legID = (
+-- 						select legID from route_path
+-- 							where routeID = var_routeID and sequence = var_flight_progress))
+--     )
+-- 	# the disembarking passengers must be located in the airport of the current leg's arrival airport
+-- 	where personID = (select customer from ticket where carrier = ip_flightID and deplane_at = 
+-- 		(select airportID from airport where
+-- 			airportID = (
+-- 				select arrival from leg
+-- 					where legID = (
+-- 						select legID from route_path
+-- 							where routeID = var_routeID and sequence = var_flight_progress)))) 
+--     
+--     and locationID = (
+--    	 select locationID from airplane where
+-- 		airlineID = var_flight_airline and
+-- 		tail_num = var_flight_tail
+--     ); 
+
+-- end //
+-- delimiter ;
+
+
 drop procedure if exists passengers_disembark;
 delimiter //
 create procedure passengers_disembark (in ip_flightID varchar(50))
@@ -357,7 +440,7 @@ airportID = (
 	select arrival from leg
 		where legID = (
 			select legID from route_path
-				where routeID = var_routeID  and sequence = var_flight_progress))) is null
+				where routeID = var_routeID  and sequence = var_flight_progress ))) is null
 then leave sp_main;
 end if;
 
@@ -380,25 +463,25 @@ update person
 				select arrival from leg
 					where legID = (
 						select legID from route_path
-							where routeID = var_routeID and sequence = var_flight_progress))
+							where routeID = var_routeID and sequence = var_flight_progress ))
     )
 	# the disembarking passengers must be located in the airport of the current leg's arrival airport
-	where personID = (select customer from ticket where carrier = ip_flightID and deplane_at = 
-		(select airportID from airport where
-			airportID = (
-				select arrival from leg
-					where legID = (
-						select legID from route_path
-							where routeID = var_routeID and sequence = var_flight_progress)))) 
-    
-    and locationID = (
+	where locationID = (
    	 select locationID from airplane where
 		airlineID = var_flight_airline and
 		tail_num = var_flight_tail
+    ) and 
+	(select arrival from leg
+					where legID = (
+						select legID from route_path
+							where routeID = var_routeID and sequence = var_flight_progress )) in (
+   	 select deplane_at from ticket
+    	where carrier = ip_flightID and customer = personID
     ); 
 
 end //
 delimiter ;
+
 
 -- [14] assign_pilot()
 -- -----------------------------------------------------------------------------
