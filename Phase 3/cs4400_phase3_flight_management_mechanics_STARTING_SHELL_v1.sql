@@ -258,8 +258,8 @@ sp_main: begin
     -- updating passenger
     update passenger
     set passenger.miles = passenger.miles + 
-    (select distance from leg right join route_path on leg.legID = route_path.legID where route_path.routeID = flight.routeID)
-    where personID in (select customer from ticket where ticket.carrier = ip_flightID);
+    (select distance from leg right join route_path on leg.legID = route_path.legID where route_path.routeID = flight.routeID and 
+    personID in (select customer from ticket where ticket.carrier = ip_flightID));
 end //
 delimiter ;
 
@@ -320,7 +320,29 @@ drop procedure if exists assign_pilot;
 delimiter //
 create procedure assign_pilot (in ip_flightID varchar(50), ip_personID varchar(50))
 sp_main: begin
-
+	if (ip_flightID is NULL or ip_personID is NULL) 
+		then leave sp_main;
+	end if;
+    if ((select flying_airplane from pilot where ip_personID = personID) is NULL) and
+    ((select flying_tail from pilot where ip_personID = personID) is NULL)
+		then leave sp_main;
+	end if;
+	if ((select plane_type from airplane join flight 
+    on (airplane.airlineID = flight.support_airline and airplane.tail_num = flight.support_tail)
+    where ip_flightID = flight.flightID) not in (select license from pilot_licenses where personID = ip_personID))
+		then leave sp_main;
+	end if;
+    update person
+    set locationID = (select airplane.locationID from airplane join flight 
+    on (airplane.airlineID = flight.support_airline and airplane.tail_num = flight.support_tail));
+    
+    update pilot
+    set flying_airline = (select support_airline from flight where ip_flightID = flight.flightID);
+	
+    update pilot
+    set flying_tail = (select support_tail from flight where ip_flightID = flight.flightID);
+    
+    
 end //
 delimiter ;
 
@@ -381,7 +403,25 @@ drop procedure if exists remove_pilot_role;
 delimiter //
 create procedure remove_pilot_role (in ip_personID varchar(50))
 sp_main: begin
-
+	if ip_personID is NULL 
+		then leave sp_main;
+	end if;
+    if ip_personID not in (select personId from pilot)
+		then leave sp_main;
+	end if;
+    
+    create TEMPORARY TABLE temp as
+    select routeID
+    from pilot
+    join flight on pilot.flying_airline = flight.support_airline and pilot.flying_tail = flight.support_tail
+    where personID = ip_personID;
+    
+    if ((select flying_airline from pilot where ip_personID = personId) is not NULL and 
+    (select flying_tail from pilot where ip_personID = personId) is not NULL) and 
+    (select flight.routeID from airplane join flight 
+    on (airplane.airlineID = flight.support_airline and airplane.tail_num = flight.support_tail)) 
+		
+		
 end //
 delimiter ;
 
