@@ -572,7 +572,7 @@ airportID = (
 	select arrival from leg
 		where legID = (
 			select legID from route_path
-				where routeID = var_routeID  and sequence = var_flight_progress))) is null
+				where routeID = var_routeID  and sequence = var_flight_progress ))) is null
 then leave sp_main;
 end if;
 
@@ -595,21 +595,20 @@ update person
 				select arrival from leg
 					where legID = (
 						select legID from route_path
-							where routeID = var_routeID and sequence = var_flight_progress))
+							where routeID = var_routeID and sequence = var_flight_progress ))
     )
 	# the disembarking passengers must be located in the airport of the current leg's arrival airport
-	where personID = (select customer from ticket where carrier = ip_flightID and deplane_at = 
-		(select airportID from airport where
-			airportID = (
-				select arrival from leg
-					where legID = (
-						select legID from route_path
-							where routeID = var_routeID and sequence = var_flight_progress)))) 
-    
-    and locationID = (
+	where locationID = (
    	 select locationID from airplane where
 		airlineID = var_flight_airline and
 		tail_num = var_flight_tail
+    ) and 
+	(select arrival from leg
+					where legID = (
+						select legID from route_path
+							where routeID = var_routeID and sequence = var_flight_progress )) in (
+   	 select deplane_at from ticket
+    	where carrier = ip_flightID and customer = personID
     ); 
 end //
 delimiter ;
