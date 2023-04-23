@@ -167,6 +167,9 @@ sp_main: begin
 	if ip_ticketID is NULL or ip_seat_number is NULL
 		then leave sp_main;
 	end if;
+    if ip_ticketID in (select ticketID from ticket)
+		then leave sp_main;
+	end if;
     if ip_customer not in (select personID from person)
 		then leave sp_main;
 	end if;
@@ -243,24 +246,39 @@ drop procedure if exists flight_landing;
 delimiter //
 create procedure flight_landing (in ip_flightID varchar(50))
 sp_main: begin
+        -- get routeID
+    set @ip_routeID = (select routeID from flight where flightID = ip_flightID);
 	if ip_flightID is NULL
 		then leave sp_main;
 	end if;
+        -- check if flight exists
+    if ip_flightID not in (select flightID from flight) then
+        leave sp_main;
+    end if;
+
+    -- check if flight is in flight
+    if (select airplane_status from flight where flightID = ip_flightID) = 'on_ground' then
+        leave sp_main;
+    end if;
+
+    -- check if flight is at last leg
+    -- if (select progress from flight where flightID = ip_flightID) = (select max(sequence) from route_path where routeID = @ip_routeID) then
+        -- leave sp_main;
+    -- end if;
     -- updating flight
     update flight
-    set next_time = DATE_ADD(flight.next_time, interval 2 hour)
+    set next_time = addtime(next_time, '1:00:00'), airplane_status = 'on_ground'
     where ip_flightID = flight.flightID;
     -- updating pilot
     update pilot
     set experience = experience + 1
-    where ((pilot.flying_airline) in (select support_airline from flight where ip_flightID = flightID))
-    and ((pilot.flying_tail) in (select support_tail from flight where ip_flightID = flightID));
+    where flying_tail in (select support_tail from flight where flightID = ip_flightID);
     -- updating passenger
     set @distance = (
     select distance from flight
     join route_path on route_path.routeID = flight.routeID
     join leg on leg.legID = route_path.legID
-    where flightID = ip_flightID and progress + 1 = sequence);
+    where flightID = ip_flightID and progress = sequence);
     update passenger
     set passenger.miles = passenger.miles + @distance
     where personID in (select customer from ticket where ticket.carrier = ip_flightID);
@@ -331,20 +349,30 @@ sp_main: begin
     ((select flying_tail from pilot where ip_personID = personID) is NULL)
 		then leave sp_main;
 	end if;
+    if (ip_flightID in (select flightID from flight where flight.progress = 'in_flight'))
+		then leave sp_main;
+	end if;
 	if ((select plane_type from airplane join flight 
     on (airplane.airlineID = flight.support_airline and airplane.tail_num = flight.support_tail)
     where ip_flightID = flight.flightID) not in (select license from pilot_licenses where personID = ip_personID))
 		then leave sp_main;
 	end if;
+	
+    -- update person values
     update person
     set locationID = (select airplane.locationID from airplane join flight 
-    on (airplane.airlineID = flight.support_airline and airplane.tail_num = flight.support_tail));
+    on (airplane.airlineID = flight.support_airline and airplane.tail_num = flight.support_tail)
+    where flight.flightID = ip_flightID)
+    where personID = ip_personID;
     
+    -- update flying_airline
     update pilot
-    set flying_airline = (select support_airline from flight where ip_flightID = flight.flightID);
-	
+    set flying_airline = (select support_airline from flight where ip_flightID = flight.flightID)
+    where personID = ip_personID;
+	-- update flying_tail
     update pilot
-    set flying_tail = (select support_tail from flight where ip_flightID = flight.flightID);
+    set flying_tail = (select support_tail from flight where ip_flightID = flight.flightID)
+    where personID = ip_personID;
     
     
 end //
@@ -442,6 +470,8 @@ sp_main: begin
 		where personID = ip_personID;
         leave sp_main;
 	end if;
+    delete from pilot_licenses
+	where personID = ip_personID;
 	delete from pilot
 	where personID = ip_personID;
 		
