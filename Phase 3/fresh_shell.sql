@@ -142,6 +142,31 @@ create procedure add_update_leg (in ip_legID varchar(50), in ip_distance integer
     in ip_departure char(3), in ip_arrival char(3))
 sp_main: begin
 
+	declare opposite_legID varchar(50);
+    declare replace_legID varchar(50);
+
+	-- Check if leg from dept airport to arrival airport alr exists
+    -- if so, update existance of current leg
+	if EXISTS (SELECT legID FROM leg WHERE departure = ip_departure and arrival = ip_arrival)
+		then
+		SELECT legID FROM leg WHERE departure = ip_departure and arrival = ip_arrival into replace_legID;
+        UPDATE leg SET distance = ip_distance WHERE legID = replace_legID;
+	-- otherwise, we create a new leg
+    -- but, we have to make sure that legIDs are not conflicting
+	else
+		if not exists(select legID from leg where legID = ip_legID)
+			then
+            INSERT into leg values(ip_legID, ip_distance, ip_departure, ip_arrival);
+		end if;
+	end if;
+
+	-- Check for symmetric leg in opposite direction
+	if exists(select legID FROM leg WHERE departure = ip_arrival and arrival = ip_departure)
+		then
+		select legID FROM leg WHERE departure = ip_arrival and arrival = ip_departure into opposite_legID;
+		update leg set distance = opposite_distance where legID = opposite_legID;
+	end if;
+
 end //
 delimiter ;
 
